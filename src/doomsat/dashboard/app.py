@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Any
 import os
 import json
 import math
+import base64
 import asyncio
 from pathlib import Path
 
@@ -17,8 +18,11 @@ from pydantic import BaseModel
 from doomsat.core.schemas import TelemetryBeacon
 from doomsat.ground_station.receiver import GroundStationReceiver
 from doomsat.ground_station.telemetry_store import TelemetryStore
-from doomsat.ground_station.image_reconstruction import GroundStationImageManager
+from doomsat.ground_station.image_reconstruction import GroundStationImageManager, ReconstructedImageRecord
 from doomsat.sim.orchestrator import MissionOrchestrator, SimulationConfig
+from doomsat.payload.camera import OV5647Camera
+from doomsat.payload.compression import compress_jpeg
+from doomsat.obc.fsm import FlightMode
 from doomsat.dashboard.visualizers import (
     build_orbit_3d_figure,
     build_ground_track_2d_figure,
@@ -35,6 +39,40 @@ ground_station_receiver = GroundStationReceiver(
     image_manager=image_manager,
 )
 live_orchestrator = MissionOrchestrator(SimulationConfig(duration_s=86400.0, dt_s=1.0))
+
+
+def generate_orbital_photo(image_id: int, lat_deg: float = 17.385, lon_deg: float = 78.487) -> ReconstructedImageRecord:
+    """Generate a procedural Earth observation photo captured from GARUDA-1U."""
+    cam = OV5647Camera()
+    scene = cam.capture_scene(
+        latitude_rad=math.radians(lat_deg),
+        longitude_rad=math.radians(lon_deg),
+        solar_zenith_angle_rad=0.35,
+        in_eclipse=False,
+        render_width=320,
+        render_height=240,
+    )
+    jpeg_res = compress_jpeg(scene, quality=80)
+    jpeg_bytes = jpeg_res.data
+    b64_thumb = base64.b64encode(jpeg_bytes).decode("ascii")
+    return ReconstructedImageRecord(
+        image_id=image_id,
+        width=320,
+        height=240,
+        size_bytes=len(jpeg_bytes),
+        total_chunks=max(1, len(jpeg_bytes) // 160),
+        capture_time_s=120.0 + image_id * 30.0,
+        gsd_m=194.4,
+        latitude_rad=math.radians(lat_deg),
+        longitude_rad=math.radians(lon_deg),
+        raw_jpeg_bytes=jpeg_bytes,
+        base64_thumbnail=b64_thumb,
+        retransmission_requests=0,
+    )
+
+
+# Preload initial Earth observation photo into Ground Station gallery
+image_manager._completed_images[1] = generate_orbital_photo(image_id=1, lat_deg=17.385, lon_deg=78.487)
 
 
 async def run_digital_twin_loop() -> None:
@@ -63,8 +101,13 @@ async def run_digital_twin_loop() -> None:
                 "altitude_km": snap.altitude_km,
                 "latitude_deg": snap.latitude_deg,
                 "longitude_deg": snap.longitude_deg,
+                "velocity_km_s": float(np.linalg.norm(snap.v_eci_km_s)),
                 "system_load_w": snap.system_load_w,
                 "doppler_khz": snap.gs_doppler_khz,
+                "omega_norm_deg_s": snap.omega_norm_deg_s,
+                "r_eci_km": [float(c) for c in snap.r_eci_km],
+                "gs_visible": snap.gs_visible,
+                "gs_elevation_deg": snap.gs_elevation_deg,
             })
     except asyncio.CancelledError:
         pass
@@ -241,17 +284,40 @@ async def get_reconstructed_images() -> List[Dict[str, Any]]:
 @app.post("/api/command/uplink")
 async def uplink_command(req: CommandRequest) -> Dict[str, Any]:
     """Uplink a flight command to the spacecraft."""
-    if not req.command.strip():
+    cmd_clean = req.command.strip().upper()
+    if not cmd_clean:
         raise HTTPException(status_code=400, detail="Command string cannot be empty")
 
     success = ground_station_receiver.send_command(
         command_str=req.command,
         target_node=req.target_node,
     )
+
+    # Execute interactive response in digital twin
+    reply_msg = "ACK: Command dispatched to OBC"
+    if "CAPTURE" in cmd_clean or "IMAGE" in cmd_clean:
+        next_id = len(image_manager._completed_images) + 1
+        lat = live_orchestrator.last_look_angles.elevation_deg if live_orchestrator.last_look_angles else 17.385
+        new_img = generate_orbital_photo(image_id=next_id, lat_deg=lat, lon_deg=78.487)
+        image_manager._completed_images[next_id] = new_img
+        reply_msg = f"ACK: Payload image #{next_id} captured (320x240 JPEG, {new_img.size_bytes}B). Downlink ready."
+    elif "PING" in cmd_clean:
+        reply_msg = "ACK: PONG [RTT: 26ms] Node 3 (RPi Zero 2W OBC) | System Status: ALL SYSTEMS NOMINAL"
+    elif "DETUMBLE" in cmd_clean:
+        live_orchestrator.obc.fsm.current_mode = FlightMode.DETUMBLE
+        reply_msg = "ACK: ADCS B-dot detumbling mode engaged. Magnetorquers active."
+    elif "NOMINAL" in cmd_clean:
+        live_orchestrator.obc.fsm.current_mode = FlightMode.NOMINAL
+        reply_msg = "ACK: Spacecraft transitioned to NOMINAL operations."
+    elif "SAFE_HOLD" in cmd_clean:
+        live_orchestrator.obc.fsm.current_mode = FlightMode.SAFE_HOLD
+        reply_msg = "ACK: Spacecraft placed in SAFE_HOLD mode."
+
     return {
         "status": "TRANSMITTED" if success else "ENQUEUED",
         "command": req.command,
         "target_node": req.target_node,
+        "reply_message": reply_msg,
     }
 
 

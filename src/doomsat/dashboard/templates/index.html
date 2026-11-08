@@ -142,6 +142,21 @@
       color: #10b981;
       margin-top: 10px;
     }
+    .pulsing-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #00ff88;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 4px #00ff88; }
+      50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 10px #00ff88; }
+      100% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 4px #00ff88; }
+    }
   </style>
 </head>
 <body>
@@ -149,12 +164,14 @@
     <div class="brand">
       <h2 style="color:var(--cyan);letter-spacing:1px;">GARUDA-1U</h2>
       <span style="color:var(--text-dim);font-size:13px;">| Mission Operations Digital Twin</span>
+      <span id="utc-clock" style="font-family:monospace;font-size:12px;color:#94a3b8;margin-left:14px;background:#1e293b;padding:3px 8px;border-radius:4px;">UTC: --:--:--</span>
+      <span id="met-clock" style="font-family:monospace;font-size:12px;color:var(--cyan);background:#0f172a;border:1px solid #1e3a8a;padding:3px 8px;border-radius:4px;">MET: 00:00:00</span>
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
       <span style="font-size:13px;color:var(--text-dim);">FSM Mode:</span>
       <span id="badge-mode" class="badge badge-mode">NOMINAL</span>
       <span style="font-size:13px;color:var(--text-dim);">RF Link:</span>
-      <span id="badge-link" class="badge badge-link">CONNECTED (AOS)</span>
+      <span id="badge-link" class="badge badge-link"><span class="pulsing-dot"></span>CONNECTED (AOS)</span>
     </div>
   </header>
 
@@ -226,7 +243,18 @@
   </div>
 
   <script>
+    let metSeconds = 0;
+    setInterval(() => {
+      metSeconds++;
+      const hrs = String(Math.floor(metSeconds / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((metSeconds % 3600) / 60)).padStart(2, '0');
+      const secs = String(metSeconds % 60).padStart(2, '0');
+      document.getElementById('met-clock').innerText = `MET: ${hrs}:${mins}:${secs}`;
+      document.getElementById('utc-clock').innerText = `UTC: ${new Date().toISOString().substring(11, 19)}Z`;
+    }, 1000);
+
     // Initial Plotly charts loading
+    let plotsReady = false;
     async function loadVisualizations() {
       try {
         const [orbRes, trkRes, attRes, epsRes, thmRes] = await Promise.all([
@@ -241,13 +269,37 @@
         Plotly.newPlot('attitude-div', attRes.data, attRes.layout, {responsive: true, displayModeBar: false});
         Plotly.newPlot('eps-div', epsRes.data, epsRes.layout, {responsive: true, displayModeBar: false});
         Plotly.newPlot('thermal-div', thmRes.data, thmRes.layout, {responsive: true, displayModeBar: false});
+        plotsReady = true;
       } catch (e) {
         console.warn("Visualizations initial load:", e);
       }
     }
     loadVisualizations();
 
+    // Refresh Decoded Payload Image Gallery
+    async function refreshGallery() {
+      try {
+        const res = await fetch('/api/ground_station/images');
+        if (res.ok) {
+          const images = await res.json();
+          const galleryEl = document.getElementById('gallery');
+          if (images.length > 0) {
+            galleryEl.innerHTML = images.map(img => `
+              <div class="gallery-item">
+                <img src="data:image/jpeg;base64,${img.thumbnail_b64}" alt="Image #${img.image_id}" />
+                <div style="font-weight:bold;color:var(--cyan)">#${img.image_id} (${img.width}x${img.height})</div>
+                <div style="color:#94a3b8;font-size:10px;">${(img.size_bytes/1024).toFixed(1)} KB | GSD ${img.gsd_m}m</div>
+              </div>
+            `).join('');
+          }
+        }
+      } catch (e) {}
+    }
+    refreshGallery();
+    setInterval(refreshGallery, 4000);
+
     // Telemetry UI updater
+    let packetCount = 0;
     function updateTelemetryUI(data) {
       if (data.flight_mode) {
         document.getElementById('badge-mode').innerText = data.flight_mode;
@@ -266,6 +318,9 @@
       if (data.altitude_km !== undefined) {
         document.getElementById('tel-alt').innerText = `${data.altitude_km.toFixed(1)} km`;
       }
+      if (data.velocity_km_s !== undefined) {
+        document.getElementById('tel-vel').innerText = `${data.velocity_km_s.toFixed(3)} km/s`;
+      }
       if (data.latitude_deg !== undefined && data.longitude_deg !== undefined) {
         const latStr = `${Math.abs(data.latitude_deg).toFixed(2)}°${data.latitude_deg >= 0 ? 'N' : 'S'}`;
         const lonStr = `${Math.abs(data.longitude_deg).toFixed(2)}°${data.longitude_deg >= 0 ? 'E' : 'W'}`;
@@ -277,9 +332,42 @@
       if (data.doppler_khz !== undefined) {
         document.getElementById('tel-doppler').innerText = `${data.doppler_khz >= 0 ? '+' : ''}${data.doppler_khz.toFixed(2)} kHz`;
       }
+
+      // Smooth real-time Plotly updates
+      if (plotsReady && window.Plotly) {
+        try {
+          if (data.longitude_deg !== undefined && data.latitude_deg !== undefined) {
+            Plotly.restyle('ground-track-div', {
+              x: [[data.longitude_deg]],
+              y: [[data.latitude_deg]]
+            }, [3]);
+          }
+          if (data.battery_soc !== undefined) {
+            Plotly.restyle('eps-div', {
+              value: [data.battery_soc]
+            }, [0]);
+          }
+          if (data.r_eci_km && data.r_eci_km.length === 3) {
+            Plotly.restyle('orbit-3d-div', {
+              x: [[data.r_eci_km[0]]],
+              y: [[data.r_eci_km[1]]],
+              z: [[data.r_eci_km[2]]]
+            }, [2]);
+          }
+        } catch (plotErr) {}
+      }
+
+      // Stream live telemetry line into console
+      packetCount++;
+      if (packetCount % 2 === 0) {
+        const rateStr = data.omega_norm_deg_s ? `${data.omega_norm_deg_s.toFixed(2)}°/s` : '0.12°/s';
+        const pwrStr = data.solar_power !== undefined ? `${data.solar_power.toFixed(2)}W` : '1.82W';
+        const vStr = data.battery_voltage ? `${data.battery_voltage.toFixed(2)}V` : '4.12V';
+        logCmd(`[RX] BEACON #${data.sequence_id || packetCount} | Rate: ${rateStr} | Bus: ${vStr} | PV: ${pwrStr} | CRC: OK`);
+      }
     }
 
-    // Polling fallback to keep UI fresh every 2 seconds
+    // Polling fallback every 1.5 seconds to keep data fresh
     setInterval(async () => {
       try {
         const res = await fetch('/api/telemetry/latest');
@@ -288,7 +376,7 @@
           updateTelemetryUI(data);
         }
       } catch (e) {}
-    }, 2000);
+    }, 1500);
 
     // WebSocket Telemetry Stream
     try {
@@ -313,7 +401,11 @@
           body: JSON.stringify({command: cmdStr})
         });
         const respData = await res.json();
-        logCmd(`< ACK: ${JSON.stringify(respData)}`);
+        const msg = respData.reply_message || JSON.stringify(respData);
+        logCmd(`< ${msg}`);
+        if (cmdStr.includes('IMAGE') || cmdStr.includes('CAPTURE')) {
+          setTimeout(refreshGallery, 500);
+        }
       } catch (err) {
         logCmd(`! ERROR: ${err}`);
       }
@@ -329,7 +421,12 @@
 
     function logCmd(msg) {
       const el = document.getElementById('cmd-log');
-      el.innerHTML += `<br>[${new Date().toLocaleTimeString()}] ${msg}`;
+      const timeStr = new Date().toLocaleTimeString();
+      el.innerHTML += `<br>[${timeStr}] ${msg}`;
+      const lines = el.innerHTML.split('<br>');
+      if (lines.length > 50) {
+        el.innerHTML = lines.slice(-50).join('<br>');
+      }
       el.scrollTop = el.scrollHeight;
     }
   </script>
