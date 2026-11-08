@@ -1,0 +1,98 @@
+# DOOMSat 1U CubeSat Default Mission & Hardware Configuration
+# All physical values are strictly in SI units (m, s, kg, K, W, V, A, rad, Hz)
+# unless explicitly qualified in field name (e.g., _deg, _dbm, _mah).
+
+mission:
+  name: "DOOMSat-1"
+  orbit:
+    altitude_m: 500000.0             # 500 km circular Low Earth Orbit
+    inclination_deg: 97.4            # Sun-synchronous orbit inclination
+    eccentricity: 0.0001             # Near-circular
+    raan_deg: 0.0                    # Right Ascension of Ascending Node
+    arg_perigee_deg: 0.0             # Argument of Perigee
+    mean_anomaly_deg: 0.0            # Initial Mean Anomaly
+    epoch_iso: "2026-11-08T00:00:00Z"
+  simulation:
+    duration_s: 5760.0               # ~1 full orbit (~96 minutes)
+    time_step_s: 0.5                 # Master simulation time step
+
+ground_station:
+  name: "Hyderabad-GS"
+  latitude_deg: 17.3850              # Hyderabad, Telangana, India
+  longitude_deg: 78.4867
+  altitude_m: 505.0                  # Elevation above MSL
+  min_elevation_deg: 10.0            # Horizon mask limit
+  antenna_gain_rx_dbi: 12.0          # High-gain ground station Yagi-Uda
+
+mechanical:
+  mass_kg: 0.746                     # Estimated launch mass (margin compliant <= 1.33 kg)
+  dimensions_m: [0.100, 0.100, 0.1135] # 1U standard envelope
+  moments_of_inertia_kg_m2:
+    ixx: 0.00165
+    iyy: 0.00165
+    izz: 0.00155
+    ixy: 0.00000
+    ixz: 0.00000
+    iyz: 0.00000
+
+radio:
+  # Regulatory Band Profile:
+  # - "itu_amateur_space": 436.5 MHz (Simulated orbital space segment, requires ITU/IARU amateur flag)
+  # - "wpc_india_delicensed": 865.5 MHz (Compliant with Indian WPC G.S.R. 564(E) for HIL benchtop testing)
+  band_profile: "itu_amateur_space"
+  frequency_hz: 436500000.0          # 436.500 MHz
+  bandwidth_hz: 125000.0             # 125 kHz LoRa bandwidth
+  spreading_factor: 9                # LoRa SF9
+  coding_rate: "4/5"                 # LoRa CR 4/5
+  tx_power_dbm: 17.0                 # +17 dBm (50 mW)
+  satellite_antenna_gain_dbi: 2.15   # Deployable quarter-wave monopole
+  noise_figure_db: 4.0               # Receiver noise figure
+  cstp_mtu_bytes: 220                # Maximum payload size per CSTP frame
+
+payload_camera:
+  sensor: "OmniVision OV5647"
+  sensor_width_mm: 3.674
+  sensor_height_mm: 2.760
+  pixel_width: 2592
+  pixel_height: 1944
+  focal_length_mm: 3.6               # Standard M12 lens
+  compression_quality_pct: 75        # Nominal JPEG quality
+
+adcs:
+  sensors:
+    mpu6050_gyro_noise_density_radps_sqrthz: 0.000087  # 0.005 deg/s/sqrt(Hz)
+    mpu6050_accel_noise_density_mps2_sqrthz: 0.0039     # 400 ug/sqrt(Hz)
+    lis3mdl_mag_noise_std_tesla: 3.2e-7                # 3.2 mgauss = 0.32 uT
+    photodiode_responsivity_v_per_sun: 3.0             # Volts at 1 Solar Constant normal
+  actuators:
+    magnetorquer_max_dipole_am2: 0.15                  # 0.15 A*m^2 magnetic torquer coils
+  control:
+    bdot_gain: 2.0e5                                   # B-dot detumbling gain
+
+eps:
+  battery:
+    cell_type: "Samsung INR18650-25R"
+    nominal_capacity_mah: 2500.0
+    nominal_voltage_v: 3.6
+    charge_voltage_limit_v: 4.2
+    discharge_cutoff_v: 3.2
+    initial_soc_pct: 95.0
+  solar:
+    cell_efficiency: 0.285                             # Triple-junction GaAs cells (28.5%)
+    panel_area_per_face_m2: 0.007                      # 70 cm^2 active cell area
+    active_faces: ["+X", "-X", "+Y", "-Y", "+Z"]       # -Z is camera lens aperture
+
+thermal:
+  solar_absorptivity_alpha: 0.90
+  ir_emissivity_epsilon: 0.82
+  internal_dissipation_idle_w: 0.8                     # Idle standby power dissipation
+  internal_dissipation_active_w: 2.5                   # Peak imaging + transmitting power
+  initial_temperatures_k:
+    face_pos_x: 290.0
+    face_neg_x: 290.0
+    face_pos_y: 290.0
+    face_neg_y: 290.0
+    face_pos_z: 290.0
+    face_neg_z: 290.0
+    electronics: 295.0
+    battery: 293.0
