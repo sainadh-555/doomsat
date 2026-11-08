@@ -1,9 +1,9 @@
-# DOOMSat RF Regulatory Compliance & Frequency Plan
+# GARUDA-1U RF Regulatory Compliance & Frequency Plan
 
-**Document ID:** DOOM-RF-001  
+**Document ID:** GARUDA-RF-001  
 **Revision:** 1.0  
 **Status:** Approved Baseline  
-**System:** DOOMSat 1U CubeSat Mission Simulator & Digital Twin  
+**System:** GARUDA-1U 1U CubeSat Mission Simulator & Digital Twin  
 **Jurisdiction Reference:** India (WPC / DoT) & International (ITU / IARU)  
 
 ---
@@ -41,9 +41,9 @@ Operating any wireless radio transmitter (including Semtech SX1276 LoRa transcei
 
 ---
 
-## 3. DOOMSat Dual-Frequency Profile Architecture
+## 3. GARUDA-1U Dual-Frequency Profile Architecture
 
-To satisfy both high-fidelity orbital space simulation and physical lab safety, DOOMSat implements two mutually exclusive, configuration-enforced RF profiles:
+To satisfy both high-fidelity orbital space simulation and physical lab safety, GARUDA-1U implements two mutually exclusive, configuration-enforced RF profiles:
 
 ```mermaid
 flowchart TD

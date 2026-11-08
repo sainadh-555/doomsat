@@ -1,9 +1,9 @@
-# DOOMSat 1U CubeSat Default Mission & Hardware Configuration
+# GARUDA-1U 1U CubeSat Default Mission & Hardware Configuration
 # All physical values are strictly in SI units (m, s, kg, K, W, V, A, rad, Hz)
 # unless explicitly qualified in field name (e.g., _deg, _dbm, _mah).
 
 mission:
-  name: "DOOMSat-1"
+  name: "GARUDA-1"
   orbit:
     altitude_m: 500000.0             # 500 km circular Low Earth Orbit
     inclination_deg: 97.4            # Sun-synchronous orbit inclination

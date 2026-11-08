@@ -39,6 +39,8 @@ ground_station_receiver = GroundStationReceiver(
     image_manager=image_manager,
 )
 live_orchestrator = MissionOrchestrator(SimulationConfig(duration_s=86400.0, dt_s=1.0))
+time_warp_factor: int = 5
+latest_telemetry_dict: Dict[str, Any] = {}
 
 
 def generate_orbital_photo(image_id: int, lat_deg: float = 17.385, lon_deg: float = 78.487) -> ReconstructedImageRecord:
@@ -71,16 +73,25 @@ def generate_orbital_photo(image_id: int, lat_deg: float = 17.385, lon_deg: floa
     )
 
 
-# Preload initial Earth observation photo into Ground Station gallery
+# Preload initial Earth observation photos into Ground Station gallery
 image_manager._completed_images[1] = generate_orbital_photo(image_id=1, lat_deg=17.385, lon_deg=78.487)
+image_manager._completed_images[2] = generate_orbital_photo(image_id=2, lat_deg=28.613, lon_deg=77.209)
 
 
 async def run_digital_twin_loop() -> None:
     """Continuously advance digital twin simulation clock and broadcast telemetry."""
+    global latest_telemetry_dict, time_warp_factor
     try:
         while True:
             await asyncio.sleep(1.0)
-            snap = live_orchestrator.step()
+            # Advance simulation clock by time_warp_factor steps per real-time second
+            snap = None
+            for _ in range(max(1, time_warp_factor)):
+                snap = live_orchestrator.step()
+
+            if snap is None:
+                continue
+
             beacon = TelemetryBeacon(
                 sequence_id=live_orchestrator.beacon_seq_counter,
                 timestamp_s=snap.time_s,
@@ -92,11 +103,11 @@ async def run_digital_twin_loop() -> None:
                 battery_temp_k=snap.temp_battery_c + 273.15,
                 angular_rate_norm_radps=math.radians(snap.omega_norm_deg_s),
                 in_eclipse=snap.in_eclipse,
-                rssi_dbm=-110.5,
-                snr_db=7.8,
+                rssi_dbm=-110.5 if snap.gs_visible else -126.0,
+                snr_db=7.8 if snap.gs_visible else -5.0,
             )
             telemetry_store.add_beacon(beacon)
-            await connection_manager.broadcast({
+            latest_telemetry_dict = {
                 **beacon.model_dump(),
                 "altitude_km": snap.altitude_km,
                 "latitude_deg": snap.latitude_deg,
@@ -108,7 +119,9 @@ async def run_digital_twin_loop() -> None:
                 "r_eci_km": [float(c) for c in snap.r_eci_km],
                 "gs_visible": snap.gs_visible,
                 "gs_elevation_deg": snap.gs_elevation_deg,
-            })
+                "warp_factor": time_warp_factor,
+            }
+            await connection_manager.broadcast(latest_telemetry_dict)
     except asyncio.CancelledError:
         pass
     except Exception as e:
@@ -147,6 +160,11 @@ class CommandRequest(BaseModel):
     """Schema for command uplink request."""
     command: str
     target_node: int = 3  # OBC by default
+
+
+class WarpRequest(BaseModel):
+    """Schema for simulation time warp acceleration factor."""
+    warp: int
 
 
 class ConnectionManager:
@@ -216,10 +234,12 @@ async def get_system_status() -> Dict[str, Any]:
 
 @app.get("/api/telemetry/latest")
 async def get_latest_telemetry() -> Dict[str, Any]:
-    """Return latest housekeeping telemetry beacon."""
+    """Return latest housekeeping telemetry beacon with live orbital coordinates."""
+    if latest_telemetry_dict:
+        return latest_telemetry_dict
+
     beacon = telemetry_store.get_latest()
     if beacon is None:
-        # Synthesize nominal beacon if receiver has not yet ingested packets
         beacon = TelemetryBeacon(
             sequence_id=0,
             timestamp_s=0.0,
@@ -234,7 +254,30 @@ async def get_latest_telemetry() -> Dict[str, Any]:
             rssi_dbm=-112.5,
             snr_db=6.4,
         )
-    return beacon.model_dump()
+    return {
+        **beacon.model_dump(),
+        "altitude_km": 500.0,
+        "latitude_deg": 17.385,
+        "longitude_deg": 78.487,
+        "velocity_km_s": 7.612,
+        "system_load_w": 0.75,
+        "doppler_khz": 0.0,
+        "omega_norm_deg_s": 0.86,
+        "r_eci_km": [6878.0, 0.0, 0.0],
+        "gs_visible": True,
+        "gs_elevation_deg": 45.0,
+        "warp_factor": time_warp_factor,
+    }
+
+
+@app.post("/api/sim/warp")
+async def set_time_warp(req: WarpRequest) -> Dict[str, Any]:
+    """Dynamically set the simulation acceleration / time warp factor."""
+    global time_warp_factor
+    time_warp_factor = max(1, min(120, req.warp))
+    if latest_telemetry_dict:
+        latest_telemetry_dict["warp_factor"] = time_warp_factor
+    return {"status": "OK", "warp_factor": time_warp_factor}
 
 
 @app.get("/api/telemetry/history")
@@ -305,12 +348,18 @@ async def uplink_command(req: CommandRequest) -> Dict[str, Any]:
         reply_msg = "ACK: PONG [RTT: 26ms] Node 3 (RPi Zero 2W OBC) | System Status: ALL SYSTEMS NOMINAL"
     elif "DETUMBLE" in cmd_clean:
         live_orchestrator.obc.fsm.current_mode = FlightMode.DETUMBLE
+        if latest_telemetry_dict:
+            latest_telemetry_dict["flight_mode"] = "DETUMBLE"
         reply_msg = "ACK: ADCS B-dot detumbling mode engaged. Magnetorquers active."
     elif "NOMINAL" in cmd_clean:
         live_orchestrator.obc.fsm.current_mode = FlightMode.NOMINAL
+        if latest_telemetry_dict:
+            latest_telemetry_dict["flight_mode"] = "NOMINAL"
         reply_msg = "ACK: Spacecraft transitioned to NOMINAL operations."
     elif "SAFE_HOLD" in cmd_clean:
         live_orchestrator.obc.fsm.current_mode = FlightMode.SAFE_HOLD
+        if latest_telemetry_dict:
+            latest_telemetry_dict["flight_mode"] = "SAFE_HOLD"
         reply_msg = "ACK: Spacecraft placed in SAFE_HOLD mode."
 
     return {

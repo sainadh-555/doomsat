@@ -9,10 +9,10 @@ from doomsat.sim.hil_runner import HILBenchtopRunner
 
 
 def main() -> None:
-    """CLI entry point for DOOMSat 1U mission simulation."""
+    """CLI entry point for GARUDA-1U mission simulation."""
     parser = argparse.ArgumentParser(
         prog="doomsat",
-        description="DOOMSat 1U CubeSat Digital Twin & Mission Operations CLI",
+        description="GARUDA-1U CubeSat Digital Twin & Mission Operations CLI",
     )
     subparsers = parser.add_subparsers(dest="subcommand", help="Available subcommands")
 
@@ -42,7 +42,7 @@ def main() -> None:
             altitude_m=args.altitude,
             radio_mode=args.mode,
         )
-        print(f"[*] Initializing DOOMSat 1U Mission Simulator (Duration: {args.duration}s, dt: {args.dt}s)...")
+        print(f"[*] Initializing GARUDA-1U Mission Simulator (Duration: {args.duration}s, dt: {args.dt}s)...")
         orchestrator = MissionOrchestrator(config)
 
         start_wall = time.time()

@@ -1,15 +1,15 @@
-# DOOMSat Interface Control Document (ICD)
+# GARUDA-1U Interface Control Document (ICD)
 
-**Document ID:** DOOM-ICD-001  
+**Document ID:** GARUDA-ICD-001  
 **Revision:** 1.0  
 **Status:** Approved Baseline  
-**System:** DOOMSat 1U CubeSat Digital Twin & Mission Simulator  
+**System:** GARUDA-1U 1U CubeSat Digital Twin & Mission Simulator  
 
 ---
 
 ## 1. Electrical & Data Architecture Overview
 
-DOOMSat avionics are organized around two primary processing nodes:
+GARUDA-1U avionics are organized around two primary processing nodes:
 1. **On-Board Computer (OBC):** Raspberry Pi Zero 2 W (High-level coordination, camera capture, image processing, filesystem).
 2. **TT&C Controller:** Espressif ESP32-WROOM-32D (Low-level real-time radio control, watchdog supervisor, CSTP packet routing, sensor acquisition).
 

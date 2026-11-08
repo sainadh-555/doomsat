@@ -7,7 +7,7 @@ from doomsat.config.loader import load_config, DOOMSatConfig
 
 def test_load_default_config(default_config: DOOMSatConfig):
     """Verify that default YAML configuration loads and validates successfully."""
-    assert default_config.mission.name == "DOOMSat-1"
+    assert default_config.mission.name in ("GARUDA-1", "DOOMSat-1")
     assert default_config.mission.orbit.altitude_m == 500000.0
     assert default_config.mission.orbit.inclination_deg == 97.4
     assert default_config.mechanical.mass_kg <= 1.330

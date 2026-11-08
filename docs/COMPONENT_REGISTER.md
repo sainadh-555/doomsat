@@ -1,15 +1,15 @@
-# DOOMSat Traceable Component Register
+# GARUDA-1U Traceable Component Register
 
-**Document ID:** DOOM-REG-001  
+**Document ID:** GARUDA-REG-001  
 **Revision:** 1.0  
 **Status:** Approved Baseline  
-**System:** DOOMSat 1U CubeSat Digital Twin & Mission Simulator  
+**System:** GARUDA-1U 1U CubeSat Digital Twin & Mission Simulator  
 
 ---
 
 ## 1. Classification Methodology
 
-In accordance with DOOMSat engineering rules, all physical and operational parameters must be strictly classified:
+In accordance with GARUDA-1U engineering rules, all physical and operational parameters must be strictly classified:
 1. **Datasheet-Derived [D]:** Extracted directly from official manufacturer technical datasheets, application notes, or standardized industry specifications.
 2. **Assumed [A]:** Derived from engineering estimates, standard space industry baselines (e.g., ECSS / NASA CubeSat handbook), or geometric calculations pending empirical verification.
 3. **Measured [M]:** Empirically verified through laboratory benchtop measurement, calibration rigs, or Hardware-in-the-Loop tests.

@@ -26,7 +26,7 @@ class SimulationConfig(BaseModel):
 
 
 class MissionConfig(BaseModel):
-    name: str = Field("DOOMSat-1", description="Mission Name")
+    name: str = Field("GARUDA-1", description="Mission Name")
     orbit: OrbitConfig
     simulation: SimulationConfig
 

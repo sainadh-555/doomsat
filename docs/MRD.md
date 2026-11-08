@@ -1,15 +1,15 @@
-# DOOMSat Mission Requirements Document (MRD)
+# GARUDA-1U Mission Requirements Document (MRD)
 
-**Document ID:** DOOM-MRD-001  
+**Document ID:** GARUDA-MRD-001  
 **Revision:** 1.0  
 **Status:** Approved Baseline  
-**System:** DOOMSat 1U CubeSat Mission Simulator & Digital Twin  
+**System:** GARUDA-1U 1U CubeSat Mission Simulator & Digital Twin  
 
 ---
 
 ## 1. Scope & Mission Definition
 
-DOOMSat is a 1U CubeSat technology demonstration mission designed to operate in Low Earth Orbit (LEO, circular $500\text{ km}$ altitude, $97.4^\circ$ Sun-Synchronous Orbit). The primary mission objectives are:
+GARUDA-1U is a 1U CubeSat technology demonstration mission designed to operate in Low Earth Orbit (LEO, circular $500\text{ km}$ altitude, $97.4^\circ$ Sun-Synchronous Orbit). The primary mission objectives are:
 1. Low-power Earth observation utilizing an onboard 5MP CMOS camera (OmniVision OV5647).
 2. Ground command and telemetry transmission using CSTP (CubeSat Space Transfer Protocol) over Semtech SX1276 LoRa transceivers.
 3. Multi-sensor attitude determination using IMU (MPU6050), 3-axis magnetometer (LIS3MDL), and a 6-channel photodiode sun sensor network (BPW83 + ADS1115).

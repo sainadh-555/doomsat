@@ -16,7 +16,7 @@ GARUDA-1U is an engineering-grade digital twin and multi-physics mission simulat
 
 ```
 +-----------------------------------------------------------------------------------+
-|                                  DOOMSat 1U CubeSat                               |
+|                                  GARUDA-1U CubeSat                               |
 |                                                                                   |
 |  +---------------------+      +---------------------+      +-------------------+  |
 |  |     OBC Subsystem   | UART |   TT&C Controller   | SPI  |   RF Transceiver  |  |

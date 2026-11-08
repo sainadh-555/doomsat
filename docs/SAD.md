@@ -1,15 +1,15 @@
-# DOOMSat System Architecture Document (SAD)
+# GARUDA-1U System Architecture Document (SAD)
 
-**Document ID:** DOOM-SAD-001  
+**Document ID:** GARUDA-SAD-001  
 **Revision:** 1.0  
 **Status:** Approved Baseline  
-**System:** DOOMSat 1U CubeSat Digital Twin & Mission Simulator  
+**System:** GARUDA-1U 1U CubeSat Digital Twin & Mission Simulator  
 
 ---
 
 ## 1. Architectural Principles & System Decomposition
 
-DOOMSat employs a decoupled, modular, model-based architecture. The simulation engine runs in discrete time steps ($\Delta t$) or continuous numerical integration steps, maintaining state vector consistency across all subsystems while preserving clean separation between flight software models, physical environment dynamics, and hardware interfaces.
+GARUDA-1U employs a decoupled, modular, model-based architecture. The simulation engine runs in discrete time steps ($\Delta t$) or continuous numerical integration steps, maintaining state vector consistency across all subsystems while preserving clean separation between flight software models, physical environment dynamics, and hardware interfaces.
 
 ```mermaid
 graph TD
