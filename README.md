@@ -1,6 +1,7 @@
 # GARUDA-1U: 1U CubeSat Digital Twin & Mission Simulation
 
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3119/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Architecture](https://img.shields.io/badge/architecture-1U%20CubeSat-orange.svg)]()
 [![Status](https://img.shields.io/badge/development-All%20Phases%20Complete%20(108%2F108%20Tests)-brightgreen.svg)]()
 [![Tests](https://img.shields.io/badge/tests-108%20passed-success.svg)]()
