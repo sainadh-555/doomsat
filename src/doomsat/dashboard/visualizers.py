@@ -115,15 +115,19 @@ def build_orbit_3d_figure(
     max_range = r_earth * 1.5
     fig.update_layout(
         template="plotly_dark",
-        title="3D Orbital Trajectory & Earth Sphere (ECI)",
+        paper_bgcolor="#121824",
+        plot_bgcolor="#0a0d14",
+        font=dict(color="#e2e8f0"),
+        title=dict(text="3D Orbital Trajectory & Earth Sphere (ECI)", font=dict(color="#00d4ff")),
         margin=dict(l=0, r=0, b=0, t=40),
         scene=dict(
-            xaxis=dict(range=[-max_range, max_range], title="X [km]"),
-            yaxis=dict(range=[-max_range, max_range], title="Y [km]"),
-            zaxis=dict(range=[-max_range, max_range], title="Z [km]"),
+            bgcolor="#0a0d14",
+            xaxis=dict(range=[-max_range, max_range], title="X [km]", color="#94a3b8", gridcolor="#1e293b"),
+            yaxis=dict(range=[-max_range, max_range], title="Y [km]", color="#94a3b8", gridcolor="#1e293b"),
+            zaxis=dict(range=[-max_range, max_range], title="Z [km]", color="#94a3b8", gridcolor="#1e293b"),
             aspectmode="cube",
         ),
-        legend=dict(x=0.02, y=0.98),
+        legend=dict(x=0.02, y=0.98, font=dict(color="#e2e8f0")),
     )
 
     return fig.to_dict()
@@ -211,11 +215,14 @@ def build_ground_track_2d_figure(
 
     fig.update_layout(
         template="plotly_dark",
-        title="2D Orbital Ground Track & Station Contact Mask",
-        xaxis=dict(title="Longitude [deg]", range=[-180, 180], dtick=30),
-        yaxis=dict(title="Latitude [deg]", range=[-90, 90], dtick=30),
+        paper_bgcolor="#121824",
+        plot_bgcolor="#090d16",
+        font=dict(color="#e2e8f0"),
+        title=dict(text="2D Orbital Ground Track & Station Contact Mask", font=dict(color="#00d4ff")),
+        xaxis=dict(title="Longitude [deg]", range=[-180, 180], dtick=30, color="#94a3b8", gridcolor="#1e293b"),
+        yaxis=dict(title="Latitude [deg]", range=[-90, 90], dtick=30, color="#94a3b8", gridcolor="#1e293b"),
         margin=dict(l=40, r=20, b=40, t=40),
-        legend=dict(x=0.02, y=0.05, orientation="h"),
+        legend=dict(x=0.02, y=0.05, orientation="h", font=dict(color="#e2e8f0")),
     )
 
     return fig.to_dict()
@@ -301,15 +308,19 @@ def build_attitude_cube_figure(
     lim = 0.10
     fig.update_layout(
         template="plotly_dark",
-        title="3D Spacecraft Attitude Orientation",
+        paper_bgcolor="#121824",
+        plot_bgcolor="#0a0d14",
+        font=dict(color="#e2e8f0"),
+        title=dict(text="3D Spacecraft Attitude Orientation", font=dict(color="#00d4ff")),
         margin=dict(l=0, r=0, b=0, t=40),
         scene=dict(
-            xaxis=dict(range=[-lim, lim], title="X"),
-            yaxis=dict(range=[-lim, lim], title="Y"),
-            zaxis=dict(range=[-lim, lim], title="Z"),
+            bgcolor="#0a0d14",
+            xaxis=dict(range=[-lim, lim], title="X", color="#94a3b8", gridcolor="#1e293b"),
+            yaxis=dict(range=[-lim, lim], title="Y", color="#94a3b8", gridcolor="#1e293b"),
+            zaxis=dict(range=[-lim, lim], title="Z", color="#94a3b8", gridcolor="#1e293b"),
             aspectmode="cube",
         ),
-        legend=dict(x=0.02, y=0.98),
+        legend=dict(x=0.02, y=0.98, font=dict(color="#e2e8f0")),
     )
 
     return fig.to_dict()
@@ -360,6 +371,8 @@ def build_eps_battery_gauge(
 
     fig.update_layout(
         template="plotly_dark",
+        paper_bgcolor="#121824",
+        font=dict(color="#e2e8f0"),
         margin=dict(l=20, r=20, b=20, t=40),
         height=260,
     )
@@ -407,8 +420,12 @@ def build_thermal_bar_chart(thermal_state_dict: Dict[str, float]) -> Dict[str, A
 
     fig.update_layout(
         template="plotly_dark",
-        title="Thermal Subsystem Multi-Node Temperature (°C)",
-        yaxis=dict(title="Temperature [°C]", range=[-35, 65]),
+        paper_bgcolor="#121824",
+        plot_bgcolor="#090d16",
+        font=dict(color="#e2e8f0"),
+        title=dict(text="Thermal Subsystem Multi-Node Temperature (°C)", font=dict(color="#00d4ff")),
+        xaxis=dict(color="#94a3b8", gridcolor="#1e293b"),
+        yaxis=dict(title="Temperature [°C]", range=[-35, 65], color="#94a3b8", gridcolor="#1e293b"),
         margin=dict(l=40, r=20, b=40, t=40),
         height=260,
     )

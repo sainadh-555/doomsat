@@ -398,10 +398,19 @@
         {type: 'scatter3d', x: [trailX[0]], y: [trailY[0]], z: [trailZ[0]], mode: 'markers+text', marker: {size: 8, color: '#ff0055', symbol: 'diamond'}, text: ['GARUDA-1U'], textposition: 'top center', name: 'GARUDA-1U'},
         {type: 'scatter3d', x: [0, R_EARTH * 1.8], y: [0, 0], z: [0, 0], mode: 'lines', line: {color: '#ffdd00', width: 3}, name: 'Solar Vector'}
       ], {
-        template: 'plotly_dark',
-        title: '3D Orbital Trajectory & Earth Sphere (ECI)',
-        scene: {xaxis: {title: 'X [km]'}, yaxis: {title: 'Y [km]'}, zaxis: {title: 'Z [km]'}, aspectmode: 'data'},
-        margin: {l: 20, r: 20, b: 20, t: 40}
+        paper_bgcolor: '#121824',
+        plot_bgcolor: '#0a0d14',
+        font: {color: '#e2e8f0'},
+        title: {text: '3D Orbital Trajectory & Earth Sphere (ECI)', font: {color: '#00d4ff'}},
+        scene: {
+          bgcolor: '#0a0d14',
+          xaxis: {title: 'X [km]', color: '#94a3b8', gridcolor: '#1e293b', zerolinecolor: '#334155'},
+          yaxis: {title: 'Y [km]', color: '#94a3b8', gridcolor: '#1e293b', zerolinecolor: '#334155'},
+          zaxis: {title: 'Z [km]', color: '#94a3b8', gridcolor: '#1e293b', zerolinecolor: '#334155'},
+          aspectmode: 'data'
+        },
+        margin: {l: 10, r: 10, b: 10, t: 40},
+        legend: {font: {color: '#e2e8f0'}}
       }, {responsive: true, displayModeBar: false});
 
       // 2. 2D Ground Track
@@ -423,12 +432,14 @@
         {type: 'scatter', x: [GS_LON], y: [GS_LAT], mode: 'markers+text', marker: {size: 10, color: '#00ff88', symbol: 'triangle-up'}, text: ['Hyderabad'], textposition: 'top right', name: 'Ground Station'},
         {type: 'scatter', x: [GS_LON], y: [GS_LAT], mode: 'markers+text', marker: {size: 12, color: '#ff0055', symbol: 'circle-cross'}, text: ['GARUDA-1U'], textposition: 'bottom center', name: 'Sub-Satellite'}
       ], {
-        template: 'plotly_dark',
-        title: '2D Orbital Ground Track & Station Contact Mask',
-        xaxis: {title: 'Longitude [deg]', range: [-180, 180], dtick: 30},
-        yaxis: {title: 'Latitude [deg]', range: [-90, 90], dtick: 30},
+        paper_bgcolor: '#121824',
+        plot_bgcolor: '#090d16',
+        font: {color: '#e2e8f0'},
+        title: {text: '2D Orbital Ground Track & Station Contact Mask', font: {color: '#00d4ff'}},
+        xaxis: {title: 'Longitude [deg]', range: [-180, 180], dtick: 30, color: '#94a3b8', gridcolor: '#1e293b', zerolinecolor: '#334155'},
+        yaxis: {title: 'Latitude [deg]', range: [-90, 90], dtick: 30, color: '#94a3b8', gridcolor: '#1e293b', zerolinecolor: '#334155'},
         margin: {l: 40, r: 20, b: 40, t: 40},
-        legend: {x: 0.02, y: 0.05, orientation: 'h'}
+        legend: {x: 0.02, y: 0.05, orientation: 'h', font: {color: '#e2e8f0'}}
       }, {responsive: true, displayModeBar: false});
 
       // 3. 3D Attitude Cube
@@ -439,10 +450,19 @@
         {type: 'scatter3d', x: [0, 0.8], y: [0, 0.3], z: [0, 0.5], mode: 'lines+markers', line: {color: '#ff0055', width: 4}, name: 'Omega Rate'},
         {type: 'scatter3d', x: [0, 0.707], y: [0, 0], z: [0, 0.707], mode: 'lines+markers', line: {color: '#ffdd00', width: 4}, name: 'Sun Direction'}
       ], {
-        template: 'plotly_dark',
-        title: '3D Spacecraft Attitude Orientation',
-        scene: {xaxis: {range: [-1.2, 1.2]}, yaxis: {range: [-1.2, 1.2]}, zaxis: {range: [-1.2, 1.2]}, aspectmode: 'cube'},
-        margin: {l: 10, r: 10, b: 10, t: 35}
+        paper_bgcolor: '#121824',
+        plot_bgcolor: '#0a0d14',
+        font: {color: '#e2e8f0'},
+        title: {text: '3D Spacecraft Attitude Orientation', font: {color: '#00d4ff'}},
+        scene: {
+          bgcolor: '#0a0d14',
+          xaxis: {range: [-1.2, 1.2], color: '#94a3b8', gridcolor: '#1e293b'},
+          yaxis: {range: [-1.2, 1.2], color: '#94a3b8', gridcolor: '#1e293b'},
+          zaxis: {range: [-1.2, 1.2], color: '#94a3b8', gridcolor: '#1e293b'},
+          aspectmode: 'cube'
+        },
+        margin: {l: 10, r: 10, b: 10, t: 35},
+        legend: {font: {color: '#e2e8f0'}}
       }, {responsive: true, displayModeBar: false});
 
       // 4. EPS Battery Gauge
@@ -450,7 +470,8 @@
         type: 'indicator',
         mode: 'gauge+number',
         value: 94.8,
-        title: {text: 'Battery SoC (%)<br><span style="font-size:12px;color:#94a3b8;">4.12V | Net: +1.07W</span>'},
+        title: {text: 'Battery SoC (%)<br><span style="font-size:12px;color:#94a3b8;">4.12V | Net: +1.07W</span>', font: {color: '#00d4ff'}},
+        number: {font: {color: '#00d4ff'}},
         gauge: {
           axis: {range: [0, 100], tickwidth: 1, tickcolor: '#94a3b8'},
           bar: {color: '#00d4ff', thickness: 0.3},
@@ -458,7 +479,8 @@
           threshold: {line: {color: '#ff0055', width: 4}, thickness: 0.75, value: 20}
         }
       }], {
-        template: 'plotly_dark',
+        paper_bgcolor: '#121824',
+        font: {color: '#e2e8f0'},
         margin: {l: 30, r: 30, b: 20, t: 40}
       }, {responsive: true, displayModeBar: false});
 
@@ -469,9 +491,12 @@
         y: [28.4, -12.1, 15.3, -8.2, 22.0, -15.0, 24.3, 19.8],
         marker: {color: ['#00d4ff', '#38bdf8', '#00d4ff', '#38bdf8', '#00d4ff', '#38bdf8', '#ffdd00', '#00ff88']}
       }], {
-        template: 'plotly_dark',
-        title: 'Thermal Subsystem Multi-Node (°C)',
-        yaxis: {title: 'Temperature [°C]', range: [-30, 70]},
+        paper_bgcolor: '#121824',
+        plot_bgcolor: '#090d16',
+        font: {color: '#e2e8f0'},
+        title: {text: 'Thermal Subsystem Multi-Node (°C)', font: {color: '#00d4ff'}},
+        xaxis: {color: '#94a3b8', gridcolor: '#1e293b'},
+        yaxis: {title: 'Temperature [°C]', range: [-30, 70], color: '#94a3b8', gridcolor: '#1e293b'},
         margin: {l: 40, r: 20, b: 40, t: 40}
       }, {responsive: true, displayModeBar: false});
     }
@@ -481,7 +506,7 @@
       const c = document.createElement('canvas');
       c.width = 320;
       c.height = 240;
-      const ctx = c.getContext('2d');
+      const ctx = c.getContext('2d', { willReadFrequently: true });
 
       // Deep space background
       ctx.fillStyle = '#05070d';
@@ -709,3 +734,4 @@
   </script>
 </body>
 </html>
+
