@@ -1,5 +1,6 @@
 """FastAPI backend and WebSocket telemetry broadcaster for GARUDA-1U Mission Control."""
 
+from contextlib import asynccontextmanager
 from typing import Dict, List, Optional, Any
 import os
 import json
@@ -17,6 +18,7 @@ from doomsat.core.schemas import TelemetryBeacon
 from doomsat.ground_station.receiver import GroundStationReceiver
 from doomsat.ground_station.telemetry_store import TelemetryStore
 from doomsat.ground_station.image_reconstruction import GroundStationImageManager
+from doomsat.sim.orchestrator import MissionOrchestrator, SimulationConfig
 from doomsat.dashboard.visualizers import (
     build_orbit_3d_figure,
     build_ground_track_2d_figure,
@@ -25,10 +27,67 @@ from doomsat.dashboard.visualizers import (
     build_thermal_bar_chart,
 )
 
+# Shared Ground Station & Live Simulation State
+telemetry_store = TelemetryStore()
+image_manager = GroundStationImageManager()
+ground_station_receiver = GroundStationReceiver(
+    telemetry_store=telemetry_store,
+    image_manager=image_manager,
+)
+live_orchestrator = MissionOrchestrator(SimulationConfig(duration_s=86400.0, dt_s=1.0))
+
+
+async def run_digital_twin_loop() -> None:
+    """Continuously advance digital twin simulation clock and broadcast telemetry."""
+    try:
+        while True:
+            await asyncio.sleep(1.0)
+            snap = live_orchestrator.step()
+            beacon = TelemetryBeacon(
+                sequence_id=live_orchestrator.beacon_seq_counter,
+                timestamp_s=snap.time_s,
+                flight_mode=snap.flight_mode,
+                battery_soc=snap.battery_soc_pct,
+                battery_voltage=snap.battery_voltage_v,
+                solar_power=snap.solar_power_w,
+                obc_temp_k=snap.temp_electronics_c + 273.15,
+                battery_temp_k=snap.temp_battery_c + 273.15,
+                angular_rate_norm_radps=math.radians(snap.omega_norm_deg_s),
+                in_eclipse=snap.in_eclipse,
+                rssi_dbm=-110.5,
+                snr_db=7.8,
+            )
+            telemetry_store.add_beacon(beacon)
+            await connection_manager.broadcast({
+                **beacon.model_dump(),
+                "altitude_km": snap.altitude_km,
+                "latitude_deg": snap.latitude_deg,
+                "longitude_deg": snap.longitude_deg,
+                "system_load_w": snap.system_load_w,
+                "doppler_khz": snap.gs_doppler_khz,
+            })
+    except asyncio.CancelledError:
+        pass
+    except Exception as e:
+        print(f"[!] Digital twin simulation loop error: {e}")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    task = asyncio.create_task(run_digital_twin_loop())
+    yield
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+
+
 app = FastAPI(
     title="GARUDA-1U Mission Control Digital Twin",
     description="Real-time telemetry, 3D visualization, and command uplink API",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # Enable CORS for local dashboards
@@ -38,14 +97,6 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-)
-
-# Shared Ground Station State
-telemetry_store = TelemetryStore()
-image_manager = GroundStationImageManager()
-ground_station_receiver = GroundStationReceiver(
-    telemetry_store=telemetry_store,
-    image_manager=image_manager,
 )
 
 

@@ -263,6 +263,20 @@
         const batC = (data.battery_temp_k || 293.15) - 273.15;
         document.getElementById('tel-temps').innerText = `${obcC.toFixed(1)}°C / ${batC.toFixed(1)}°C`;
       }
+      if (data.altitude_km !== undefined) {
+        document.getElementById('tel-alt').innerText = `${data.altitude_km.toFixed(1)} km`;
+      }
+      if (data.latitude_deg !== undefined && data.longitude_deg !== undefined) {
+        const latStr = `${Math.abs(data.latitude_deg).toFixed(2)}°${data.latitude_deg >= 0 ? 'N' : 'S'}`;
+        const lonStr = `${Math.abs(data.longitude_deg).toFixed(2)}°${data.longitude_deg >= 0 ? 'E' : 'W'}`;
+        document.getElementById('tel-pos').innerText = `${latStr}, ${lonStr}`;
+      }
+      if (data.system_load_w !== undefined) {
+        document.getElementById('tel-load').innerText = `${data.system_load_w.toFixed(2)} W`;
+      }
+      if (data.doppler_khz !== undefined) {
+        document.getElementById('tel-doppler').innerText = `${data.doppler_khz >= 0 ? '+' : ''}${data.doppler_khz.toFixed(2)} kHz`;
+      }
     }
 
     // Polling fallback to keep UI fresh every 2 seconds
