@@ -413,3 +413,4 @@ def build_thermal_bar_chart(thermal_state_dict: Dict[str, float]) -> Dict[str, A
         height=260,
     )
     return fig.to_dict()
+

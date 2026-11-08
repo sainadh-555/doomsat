@@ -80,3 +80,4 @@ class TelemetryStore:
     def clear(self) -> None:
         """Clear all stored beacons."""
         self._beacons.clear()
+

@@ -157,3 +157,4 @@ def test_dashboard_websocket_streaming(client):
         ws.send_text("ping")
         resp = ws.receive_text()
         assert resp == "pong"
+

@@ -188,7 +188,7 @@ class OBCStateMachine:
 
         # Rule 4 & 5: Detumbling logic
         if omega_norm_radps > 0.05:  # Tumbling threshold (~2.86 deg/s)
-            if self.current_mode not in (FlightMode.DETUMBLE, FlightMode.SAFE_HOLD):
+            if self.current_mode != FlightMode.DETUMBLE:
                 self.transition_to(
                     FlightMode.DETUMBLE,
                     current_time_s,

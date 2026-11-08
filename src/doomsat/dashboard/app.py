@@ -289,3 +289,4 @@ async def websocket_telemetry_endpoint(websocket: WebSocket) -> None:
         connection_manager.disconnect(websocket)
     except Exception:
         connection_manager.disconnect(websocket)
+
