@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GARUDA-1U | Mission Control Digital Twin (GitHub Public Edition)</title>
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0a0d14;
+      --card-bg: #121824;
+      --border: #1e293b;
+      --cyan: #00d4ff;
+      --green: #00ff88;
+      --red: #ff0055;
+      --yellow: #ffdd00;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-dark);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      padding: 16px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .badge-mode { background: #1e3a8a; color: #60a5fa; border: 1px solid #3b82f6; }
+    .badge-detumble { background: #7c2d12; color: #fdba74; border: 1px solid #ea580c; }
+    .badge-safe { background: #4c1d95; color: #d8b4fe; border: 1px solid #8b5cf6; }
+    .badge-link { background: #064e3b; color: var(--green); border: 1px solid #059669; }
+    .badge-los { background: #451a03; color: #fbbf24; border: 1px solid #b45309; }
+    .warp-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #0f172a;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .warp-btn {
+      padding: 3px 8px;
+      font-size: 11px;
+      border-radius: 4px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .warp-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    .warp-btn.active {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: white;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 1024px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      overflow: hidden;
+    }
+    .card h3 {
+      font-size: 14px;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #1f293d;
+      padding-bottom: 6px;
+    }
+    .metrics-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .metrics-table td {
+      padding: 6px 0;
+      border-bottom: 1px solid #1a2233;
+    }
+    .metrics-table td:last-child {
+      text-align: right;
+      font-family: "Courier New", monospace;
+      color: var(--cyan);
+      font-weight: bold;
+    }
+    .cmd-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    button {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid #334155;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    button:hover { background: #334155; border-color: var(--cyan); color: var(--cyan); }
+    button.btn-primary { background: #0284c7; border-color: #38bdf8; color: white; }
+    button.btn-primary:hover { background: #0369a1; }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .gallery-item {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 4px;
+      padding: 6px;
+      text-align: center;
+      font-size: 11px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .gallery-item:hover {
+      transform: scale(1.03);
+      border-color: var(--cyan);
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 2px;
+      margin-bottom: 4px;
+    }
+    #cmd-log {
+      height: 90px;
+      overflow-y: auto;
+      background: #090d16;
+      border: 1px solid #1a2333;
+      padding: 6px;
+      font-family: monospace;
+      font-size: 11px;
+      color: #10b981;
+      margin-top: 10px;
+    }
+    .pulsing-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #00ff88;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+      animation: pulse 1.5s infinite;
+    }
+    .pulsing-yellow {
+      background: #fbbf24 !important;
+      box-shadow: 0 0 6px #fbbf24 !important;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 4px #00ff88; }
+      50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 10px #00ff88; }
+      100% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 4px #00ff88; }
+    }
+    /* Modal Dialog */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: #121824;
+      border: 1px solid var(--cyan);
+      border-radius: 8px;
+      padding: 16px;
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+    }
+    .modal-content img {
+      max-width: 100%;
+      border-radius: 4px;
+      border: 1px solid #334155;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h2 style="color:var(--cyan);letter-spacing:1px;">GARUDA-1U</h2>
+      <span style="color:var(--text-dim);font-size:13px;">| Mission Operations Digital Twin</span>
+      <span id="utc-clock" style="font-family:monospace;font-size:12px;color:#94a3b8;background:#1e293b;padding:3px 8px;border-radius:4px;">UTC: --:--:--</span>
+      <span id="met-clock" style="font-family:monospace;font-size:12px;color:var(--cyan);background:#0f172a;border:1px solid #1e3a8a;padding:3px 8px;border-radius:4px;">MET: 00:00:00</span>
+    </div>
+
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+      <div class="warp-controls">
+        <span style="font-size:11px;color:var(--text-dim);">SIM WARP:</span>
+        <button class="warp-btn" onclick="setWarp(1)" id="btn-warp-1">1x</button>
+        <button class="warp-btn active" onclick="setWarp(5)" id="btn-warp-5">5x</button>
+        <button class="warp-btn" onclick="setWarp(20)" id="btn-warp-20">20x</button>
+        <button class="warp-btn" onclick="setWarp(60)" id="btn-warp-60">60x</button>
+      </div>
+
+      <div style="display:flex;gap:6px;align-items:center;">
+        <span style="font-size:12px;color:var(--text-dim);">FSM:</span>
+        <span id="badge-mode" class="badge badge-mode">NOMINAL</span>
+      </div>
+
+      <div style="display:flex;gap:6px;align-items:center;">
+        <span style="font-size:12px;color:var(--text-dim);">RF:</span>
+        <span id="badge-link" class="badge badge-link"><span class="pulsing-dot"></span>CONNECTED (AOS)</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Row 1: 3D Orbit Globe & 2D Ground Track -->
+  <div class="grid-2">
+    <div class="card">
+      <div id="orbit-3d-div" style="width:100%;height:380px;"></div>
+    </div>
+    <div class="card">
+      <div id="ground-track-div" style="width:100%;height:380px;"></div>
+    </div>
+  </div>
+
+  <!-- Row 2: Attitude 3D, EPS Gauge, Thermal Bar -->
+  <div class="grid-3">
+    <div class="card">
+      <div id="attitude-div" style="width:100%;height:270px;"></div>
+    </div>
+    <div class="card">
+      <div id="eps-div" style="width:100%;height:270px;"></div>
+    </div>
+    <div class="card">
+      <div id="thermal-div" style="width:100%;height:270px;"></div>
+    </div>
+  </div>
+
+  <!-- Row 3: Live Telemetry, Command Console, Payload Gallery -->
+  <div class="grid-3">
+    <div class="card">
+      <h3>Telemetry Housekeeping</h3>
+      <table class="metrics-table">
+        <tr><td>Orbit Altitude</td><td id="tel-alt">500.0 km</td></tr>
+        <tr><td>Velocity (Orbital)</td><td id="tel-vel">7.612 km/s</td></tr>
+        <tr><td>Sub-Satellite Point</td><td id="tel-pos">17.38°N, 78.48°E</td></tr>
+        <tr><td>Solar Array Output</td><td id="tel-solar">1.82 W</td></tr>
+        <tr><td>Electrical Load Draw</td><td id="tel-load">0.75 W</td></tr>
+        <tr><td>Battery SoC / Voltage</td><td id="tel-batt">92.4% / 3.91V</td></tr>
+        <tr><td>OBC / Battery Temp</td><td id="tel-temps">21.8°C / 19.5°C</td></tr>
+        <tr><td>Doppler Shift (GS)</td><td id="tel-doppler">+4.12 kHz</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Command Uplink Console</h3>
+      <div class="cmd-group">
+        <button class="btn-primary" onclick="sendCmd('CAPTURE_IMAGE')">📷 Capture Image</button>
+        <button onclick="sendCmd('TRANSMIT_IMAGE')">📡 Downlink Image</button>
+        <button onclick="sendCmd('DETUMBLE')">🔄 Detumble (B-dot)</button>
+        <button onclick="sendCmd('NOMINAL')">✅ Nominal Mode</button>
+        <button onclick="sendCmd('SAFE_HOLD')">🛡️ Safe Hold</button>
+        <button onclick="sendCmd('PING')">⚡ Ping Satellite</button>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:6px;">
+        <input id="custom-cmd" type="text" placeholder="Custom CSTP command..." style="flex:1;background:#090d16;border:1px solid #1e293b;color:white;padding:6px;border-radius:4px;font-size:12px;">
+        <button onclick="sendCustomCmd()">Send</button>
+      </div>
+      <div id="cmd-log">GARUDA-1U Digital Twin Initialized. Online and streaming...</div>
+    </div>
+
+    <div class="card">
+      <h3>Decoded Image Gallery</h3>
+      <div id="gallery" class="gallery"></div>
+    </div>
+  </div>
+
+  <!-- Image Detail Modal -->
+  <div id="img-modal" class="modal" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <h3 id="modal-title" style="color:var(--cyan);margin-bottom:8px;">GARUDA-1U Payload Image</h3>
+      <img id="modal-img" src="" alt="Full Resolution Payload Capture" />
+      <div id="modal-desc" style="color:#94a3b8;font-size:12px;margin-top:8px;"></div>
+      <button onclick="closeModal()" style="margin-top:12px;">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // -------------------------------------------------------------
+    // Multi-Physics Astrodynamics Engine (Pure JavaScript)
+    // -------------------------------------------------------------
+    const MU_EARTH = 398600.4418; // km^3/s^2
+    const R_EARTH = 6378.137;     // km
+    const ALT_KM = 500.0;
+    const ORB_R = R_EARTH + ALT_KM; // 6878.137 km
+    const INC_RAD = 97.4 * Math.PI / 180.0; // SSO
+    const MEAN_MOTION = Math.sqrt(MU_EARTH / Math.pow(ORB_R, 3)); // ~0.001107 rad/s
+    const V_ORB = Math.sqrt(MU_EARTH / ORB_R); // 7.612 km/s
+    const GS_LAT = 17.3850; // Hyderabad
+    const GS_LON = 78.4867;
+    const OMEGA_EARTH = 7.292115e-5; // rad/s
+
+    let simTime = 0.0;
+    let warpFactor = 5;
+    let flightMode = "NOMINAL";
+    let batterySoC = 94.8;
+    let batteryVoltage = 4.12;
+    let packetSeq = 1;
+    let galleryImages = [];
+
+    // Clocks
+    setInterval(() => {
+      const hrs = String(Math.floor(simTime / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((simTime % 3600) / 60)).padStart(2, '0');
+      const secs = String(Math.floor(simTime % 60)).padStart(2, '0');
+      document.getElementById('met-clock').innerText = `MET: ${hrs}:${mins}:${secs}`;
+      document.getElementById('utc-clock').innerText = `UTC: ${new Date().toISOString().substring(11, 19)}Z`;
+    }, 1000);
+
+    // Initial Visualizers
+    function initVisualizers() {
+      // 1. Orbit 3D Globe
+      const phi = [];
+      const theta = [];
+      for (let p = 0; p <= 30; p++) phi.push((p / 30) * 2 * Math.PI);
+      for (let t = 0; t <= 20; t++) theta.push(-Math.PI/2 + (t / 20) * Math.PI);
+      const xE = [], yE = [], zE = [];
+      for (let i = 0; i < theta.length; i++) {
+        const rowX = [], rowY = [], rowZ = [];
+        for (let j = 0; j < phi.length; j++) {
+          rowX.push(R_EARTH * Math.cos(theta[i]) * Math.cos(phi[j]));
+          rowY.push(R_EARTH * Math.cos(theta[i]) * Math.sin(phi[j]));
+          rowZ.push(R_EARTH * Math.sin(theta[i]));
+        }
+        xE.push(rowX); yE.push(rowY); zE.push(rowZ);
+      }
+
+      // Orbit trail
+      const trailX = [], trailY = [], trailZ = [];
+      for (let deg = 0; deg <= 360; deg += 5) {
+        const rad = deg * Math.PI / 180;
+        trailX.push(ORB_R * Math.cos(rad));
+        trailY.push(ORB_R * Math.sin(rad) * Math.cos(INC_RAD));
+        trailZ.push(ORB_R * Math.sin(rad) * Math.sin(INC_RAD));
+      }
+
+      Plotly.newPlot('orbit-3d-div', [
+        {type: 'surface', x: xE, y: yE, z: zE, colorscale: [[0, "#0b2545"], [0.5, "#134074"], [1, "#1d2d44"]], showscale: false, opacity: 0.8, hoverinfo: "skip"},
+        {type: 'scatter3d', x: trailX, y: trailY, z: trailZ, mode: 'lines', line: {color: '#00d4ff', width: 3}, name: '500km LEO Orbit'},
+        {type: 'scatter3d', x: [trailX[0]], y: [trailY[0]], z: [trailZ[0]], mode: 'markers+text', marker: {size: 8, color: '#ff0055', symbol: 'diamond'}, text: ['GARUDA-1U'], textposition: 'top center', name: 'GARUDA-1U'},
+        {type: 'scatter3d', x: [0, R_EARTH * 1.8], y: [0, 0], z: [0, 0], mode: 'lines', line: {color: '#ffdd00', width: 3}, name: 'Solar Vector'}
+      ], {
+        template: 'plotly_dark',
+        title: '3D Orbital Trajectory & Earth Sphere (ECI)',
+        scene: {xaxis: {title: 'X [km]'}, yaxis: {title: 'Y [km]'}, zaxis: {title: 'Z [km]'}, aspectmode: 'data'},
+        margin: {l: 20, r: 20, b: 20, t: 40}
+      }, {responsive: true, displayModeBar: false});
+
+      // 2. 2D Ground Track
+      const trackLons = [], trackLats = [];
+      for (let lon = -180; lon <= 180; lon += 5) {
+        trackLons.push(lon);
+        trackLats.push(Math.sin(lon * Math.PI / 180) * 51.6);
+      }
+      // GS Footprint
+      const gsCircleLons = [], gsCircleLats = [];
+      for (let a = 0; a <= 2 * Math.PI; a += 0.1) {
+        gsCircleLons.push(GS_LON + (18.0 / Math.cos(GS_LAT * Math.PI / 180)) * Math.cos(a));
+        gsCircleLats.push(GS_LAT + 18.0 * Math.sin(a));
+      }
+
+      Plotly.newPlot('ground-track-div', [
+        {type: 'scatter', x: trackLons, y: trackLats, mode: 'lines', line: {color: '#00d4ff', width: 2}, name: 'Ground Track'},
+        {type: 'scatter', x: gsCircleLons, y: gsCircleLats, mode: 'lines', fill: 'toself', fillcolor: 'rgba(0, 255, 136, 0.15)', line: {color: '#00ff88', dash: 'dash', width: 1}, name: 'Hyderabad LOS Footprint'},
+        {type: 'scatter', x: [GS_LON], y: [GS_LAT], mode: 'markers+text', marker: {size: 10, color: '#00ff88', symbol: 'triangle-up'}, text: ['Hyderabad'], textposition: 'top right', name: 'Ground Station'},
+        {type: 'scatter', x: [GS_LON], y: [GS_LAT], mode: 'markers+text', marker: {size: 12, color: '#ff0055', symbol: 'circle-cross'}, text: ['GARUDA-1U'], textposition: 'bottom center', name: 'Sub-Satellite'}
+      ], {
+        template: 'plotly_dark',
+        title: '2D Orbital Ground Track & Station Contact Mask',
+        xaxis: {title: 'Longitude [deg]', range: [-180, 180], dtick: 30},
+        yaxis: {title: 'Latitude [deg]', range: [-90, 90], dtick: 30},
+        margin: {l: 40, r: 20, b: 40, t: 40},
+        legend: {x: 0.02, y: 0.05, orientation: 'h'}
+      }, {responsive: true, displayModeBar: false});
+
+      // 3. 3D Attitude Cube
+      Plotly.newPlot('attitude-div', [
+        {type: 'mesh3d', x: [-0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5], y: [-0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5], z: [-0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5],
+         i: [7, 0, 0, 0, 4, 4, 6, 6, 4, 0, 3, 2], j: [3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3], k: [0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6],
+         opacity: 0.7, color: '#1e3a8a'},
+        {type: 'scatter3d', x: [0, 0.8], y: [0, 0.3], z: [0, 0.5], mode: 'lines+markers', line: {color: '#ff0055', width: 4}, name: 'Omega Rate'},
+        {type: 'scatter3d', x: [0, 0.707], y: [0, 0], z: [0, 0.707], mode: 'lines+markers', line: {color: '#ffdd00', width: 4}, name: 'Sun Direction'}
+      ], {
+        template: 'plotly_dark',
+        title: '3D Spacecraft Attitude Orientation',
+        scene: {xaxis: {range: [-1.2, 1.2]}, yaxis: {range: [-1.2, 1.2]}, zaxis: {range: [-1.2, 1.2]}, aspectmode: 'cube'},
+        margin: {l: 10, r: 10, b: 10, t: 35}
+      }, {responsive: true, displayModeBar: false});
+
+      // 4. EPS Battery Gauge
+      Plotly.newPlot('eps-div', [{
+        type: 'indicator',
+        mode: 'gauge+number',
+        value: 94.8,
+        title: {text: 'Battery SoC (%)<br><span style="font-size:12px;color:#94a3b8;">4.12V | Net: +1.07W</span>'},
+        gauge: {
+          axis: {range: [0, 100], tickwidth: 1, tickcolor: '#94a3b8'},
+          bar: {color: '#00d4ff', thickness: 0.3},
+          steps: [{range: [0, 20], color: 'rgba(255, 0, 85, 0.5)'}, {range: [20, 50], color: 'rgba(255, 221, 0, 0.3)'}, {range: [50, 100], color: 'rgba(0, 255, 136, 0.2)'}],
+          threshold: {line: {color: '#ff0055', width: 4}, thickness: 0.75, value: 20}
+        }
+      }], {
+        template: 'plotly_dark',
+        margin: {l: 30, r: 30, b: 20, t: 40}
+      }, {responsive: true, displayModeBar: false});
+
+      // 5. Thermal Bar Chart
+      Plotly.newPlot('thermal-div', [{
+        type: 'bar',
+        x: ['+X', '-X', '+Y', '-Y', '+Z', '-Z', 'OBC', 'BAT'],
+        y: [28.4, -12.1, 15.3, -8.2, 22.0, -15.0, 24.3, 19.8],
+        marker: {color: ['#00d4ff', '#38bdf8', '#00d4ff', '#38bdf8', '#00d4ff', '#38bdf8', '#ffdd00', '#00ff88']}
+      }], {
+        template: 'plotly_dark',
+        title: 'Thermal Subsystem Multi-Node (°C)',
+        yaxis: {title: 'Temperature [°C]', range: [-30, 70]},
+        margin: {l: 40, r: 20, b: 40, t: 40}
+      }, {responsive: true, displayModeBar: false});
+    }
+
+    // Procedural Orbital Camera Canvas
+    function generateEarthPhoto(id, lat, lon) {
+      const c = document.createElement('canvas');
+      c.width = 320;
+      c.height = 240;
+      const ctx = c.getContext('2d');
+
+      // Deep space background
+      ctx.fillStyle = '#05070d';
+      ctx.fillRect(0, 0, 320, 240);
+
+      // Stars
+      ctx.fillStyle = '#ffffff';
+      for (let i = 0; i < 40; i++) {
+        const sx = (Math.sin(id * 97 + i * 13) * 0.5 + 0.5) * 320;
+        const sy = (Math.cos(id * 43 + i * 29) * 0.5 + 0.5) * 100;
+        ctx.fillRect(sx, sy, 1.2, 1.2);
+      }
+
+      // Earth limb arc
+      const grad = ctx.createRadialGradient(160, 280, 60, 160, 280, 240);
+      grad.addColorStop(0, '#0284c7');
+      grad.addColorStop(0.4, '#0369a1');
+      grad.addColorStop(0.8, '#082f49');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(160, 280, 220, Math.PI, 2 * Math.PI);
+      ctx.fill();
+
+      // Atmospheric limb glow
+      ctx.strokeStyle = 'rgba(0, 212, 255, 0.6)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(160, 280, 222, Math.PI, 2 * Math.PI);
+      ctx.stroke();
+
+      // Continents / clouds texture
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      for (let j = 0; j < 8; j++) {
+        const cx = 50 + j * 30 + Math.sin(lat + j) * 20;
+        const cy = 110 + Math.cos(lon + j) * 30;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, 35, 12, (j * 0.2), 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      // Telemetry OSD Watermark
+      ctx.fillStyle = 'rgba(0, 212, 255, 0.9)';
+      ctx.font = '9px monospace';
+      ctx.fillText(`GARUDA-1U CAM #0${id} | ${Math.abs(lat).toFixed(1)}°N, ${Math.abs(lon).toFixed(1)}°E`, 8, 230);
+
+      const b64 = c.toDataURL('image/jpeg', 0.85);
+      return {
+        image_id: id,
+        width: 320,
+        height: 240,
+        size_bytes: Math.floor(12000 + Math.random() * 4000),
+        capture_time_s: simTime,
+        gsd_m: 194.4,
+        thumbnail_b64: b64
+      };
+    }
+
+    // Modal Helpers
+    function showModal(idx) {
+      const img = galleryImages[idx];
+      if (!img) return;
+      document.getElementById('modal-title').innerText = `GARUDA-1U Optical Payload #${img.image_id}`;
+      document.getElementById('modal-img').src = img.thumbnail_b64;
+      document.getElementById('modal-desc').innerText = `Resolution: ${img.width}x${img.height} | File Size: ${(img.size_bytes/1024).toFixed(1)} KB | GSD: ${img.gsd_m}m/px | Captured: T+${img.capture_time_s.toFixed(0)}s`;
+      document.getElementById('img-modal').style.display = 'flex';
+    }
+    function closeModal() {
+      document.getElementById('img-modal').style.display = 'none';
+    }
+
+    function renderGallery() {
+      const galleryEl = document.getElementById('gallery');
+      galleryEl.innerHTML = galleryImages.map((img, idx) => `
+        <div class="gallery-item" onclick="showModal(${idx})">
+          <img src="${img.thumbnail_b64}" alt="Image #${img.image_id}" />
+          <div style="font-weight:bold;color:var(--cyan)">#${img.image_id} (${img.width}x${img.height})</div>
+          <div style="color:#94a3b8;font-size:10px;">${(img.size_bytes/1024).toFixed(1)} KB | GSD ${img.gsd_m}m</div>
+        </div>
+      `).join('');
+    }
+
+    // Simulation Loop (Steps every 1.0 second by warpFactor)
+    function stepSimulation() {
+      simTime += warpFactor;
+      packetSeq++;
+
+      // Orbital angle
+      const theta = (MEAN_MOTION * simTime) % (2 * Math.PI);
+      const xOrb = ORB_R * Math.cos(theta);
+      const yOrb = ORB_R * Math.sin(theta);
+
+      // ECI coordinates
+      const xEci = xOrb;
+      const yEci = yOrb * Math.cos(INC_RAD);
+      const zEci = yOrb * Math.sin(INC_RAD);
+
+      // ECEF rotation
+      const gmst = (OMEGA_EARTH * simTime) % (2 * Math.PI);
+      const xEcef = xEci * Math.cos(gmst) + yEci * Math.sin(gmst);
+      const yEcef = -xEci * Math.sin(gmst) + yEci * Math.cos(gmst);
+      const zEcef = zEci;
+
+      let lonDeg = Math.atan2(yEcef, xEcef) * 180 / Math.PI;
+      let latDeg = Math.asin(zEcef / ORB_R) * 180 / Math.PI;
+
+      // Eclipse detection (Sun roughly in +X direction)
+      const inEclipse = (xEci < 0 && Math.sqrt(yEci * yEci + zEci * zEci) < R_EARTH);
+      const solarPower = inEclipse ? 0.0 : 1.85 + 0.3 * Math.sin(theta);
+      const systemLoad = 0.75;
+
+      // Battery SOC progression
+      batterySoC = Math.max(20.0, Math.min(100.0, batterySoC + (solarPower - systemLoad) * 0.003 * warpFactor));
+      batteryVoltage = 3.6 + (batterySoC / 100.0) * 0.55;
+
+      // GS Contact check
+      const dLon = Math.abs(lonDeg - GS_LON);
+      const dLat = Math.abs(latDeg - GS_LAT);
+      const distDeg = Math.sqrt(dLon * dLon + dLat * dLat);
+      const gsVisible = distDeg < 18.0;
+      const dopplerKhz = gsVisible ? (18.0 - distDeg) * (theta > Math.PI ? -0.6 : 0.6) : 0.0;
+
+      // Update Header Badges
+      const badgeMode = document.getElementById('badge-mode');
+      badgeMode.innerText = flightMode;
+      if (flightMode === 'NOMINAL') badgeMode.className = 'badge badge-mode';
+      else if (flightMode === 'DETUMBLE') badgeMode.className = 'badge badge-detumble';
+      else if (flightMode === 'SAFE_HOLD') badgeMode.className = 'badge badge-safe';
+
+      const badgeLink = document.getElementById('badge-link');
+      if (gsVisible) {
+        badgeLink.className = 'badge badge-link';
+        badgeLink.innerHTML = '<span class="pulsing-dot"></span>CONNECTED (AOS)';
+      } else {
+        badgeLink.className = 'badge badge-los';
+        badgeLink.innerHTML = '<span class="pulsing-dot pulsing-yellow"></span>SEARCHING (LOS)';
+      }
+
+      // Update Table
+      const latStr = `${Math.abs(latDeg).toFixed(2)}°${latDeg >= 0 ? 'N' : 'S'}`;
+      const lonStr = `${Math.abs(lonDeg).toFixed(2)}°${lonDeg >= 0 ? 'E' : 'W'}`;
+      document.getElementById('tel-pos').innerText = `${latStr}, ${lonStr}`;
+      document.getElementById('tel-alt').innerText = `${ALT_KM.toFixed(1)} km`;
+      document.getElementById('tel-vel').innerText = `${V_ORB.toFixed(3)} km/s`;
+      document.getElementById('tel-solar').innerText = `${solarPower.toFixed(2)} W ${inEclipse ? '(Eclipse)' : '(Sunlit)'}`;
+      document.getElementById('tel-load').innerText = `${systemLoad.toFixed(2)} W`;
+      document.getElementById('tel-batt').innerText = `${batterySoC.toFixed(1)}% / ${batteryVoltage.toFixed(2)}V`;
+      document.getElementById('tel-temps').innerText = `${(inEclipse ? 12.4 : 24.1).toFixed(1)}°C / ${(batterySoC > 80 ? 21.2 : 18.5).toFixed(1)}°C`;
+      document.getElementById('tel-doppler').innerText = `${dopplerKhz >= 0 ? '+' : ''}${dopplerKhz.toFixed(2)} kHz`;
+
+      // Update Visualizers
+      try {
+        Plotly.restyle('ground-track-div', {x: [[lonDeg]], y: [[latDeg]], text: [[`GARUDA-1U (${latStr}, ${lonStr})`]]}, [3]);
+        Plotly.restyle('orbit-3d-div', {x: [[xEci]], y: [[yEci]], z: [[zEci]]}, [2]);
+        Plotly.restyle('eps-div', {value: [batterySoC]}, [0]);
+      } catch (e) {}
+
+      // Console Logging
+      logCmd(`[RX] BEACON #${packetSeq} | Pos: (${latDeg.toFixed(1)}°, ${lonDeg.toFixed(1)}°) | Bus: ${batteryVoltage.toFixed(2)}V | PV: ${solarPower.toFixed(1)}W | Link: ${gsVisible ? 'AOS' : 'LOS'} | CRC: OK`);
+    }
+
+    // Time Warp Handler
+    function setWarp(w) {
+      warpFactor = w;
+      document.querySelectorAll('.warp-btn').forEach(b => b.classList.remove('active'));
+      const btn = document.getElementById(`btn-warp-${w}`);
+      if (btn) btn.classList.add('active');
+      logCmd(`> SIM WARP set to ${w}x`);
+    }
+
+    // Command Uplink
+    function sendCmd(cmdStr) {
+      logCmd(`> UPLINK: ${cmdStr}`);
+      const clean = cmdStr.trim().toUpperCase();
+      if (clean.includes('CAPTURE') || clean.includes('IMAGE')) {
+        const nextId = galleryImages.length + 1;
+        const newImg = generateEarthPhoto(nextId, 17.385 + Math.random() * 15, 78.487 + Math.random() * 20);
+        galleryImages.unshift(newImg);
+        renderGallery();
+        logCmd(`< ACK: Payload image #0${nextId} captured (320x240 JPEG, ${newImg.size_bytes}B). Downlink complete.`);
+      } else if (clean.includes('PING')) {
+        logCmd(`< ACK: PONG [RTT: 22ms] Node 3 (RPi Zero 2W OBC) | System Status: ALL SYSTEMS NOMINAL`);
+      } else if (clean.includes('DETUMBLE')) {
+        flightMode = "DETUMBLE";
+        logCmd(`< ACK: ADCS B-dot detumbling mode engaged. Magnetorquers active.`);
+      } else if (clean.includes('NOMINAL')) {
+        flightMode = "NOMINAL";
+        logCmd(`< ACK: Spacecraft transitioned to NOMINAL operations.`);
+      } else if (clean.includes('SAFE_HOLD')) {
+        flightMode = "SAFE_HOLD";
+        logCmd(`< ACK: Spacecraft placed in SAFE_HOLD mode.`);
+      } else {
+        logCmd(`< ACK: Command "${cmdStr}" dispatched to OBC.`);
+      }
+    }
+
+    function sendCustomCmd() {
+      const input = document.getElementById('custom-cmd');
+      if (input.value.trim()) {
+        sendCmd(input.value.trim());
+        input.value = '';
+      }
+    }
+
+    function logCmd(msg) {
+      const el = document.getElementById('cmd-log');
+      const timeStr = new Date().toLocaleTimeString();
+      el.innerHTML += `<br>[${timeStr}] ${msg}`;
+      const lines = el.innerHTML.split('<br>');
+      if (lines.length > 50) {
+        el.innerHTML = lines.slice(-50).join('<br>');
+      }
+      el.scrollTop = el.scrollHeight;
+    }
+
+    // Startup
+    window.addEventListener('load', () => {
+      initVisualizers();
+      // Preload 2 orbital photos
+      galleryImages.push(generateEarthPhoto(1, 17.385, 78.487));
+      galleryImages.push(generateEarthPhoto(2, 28.613, 77.209));
+      renderGallery();
+      setInterval(stepSimulation, 1000);
+    });
+  </script>
+</body>
+</html>

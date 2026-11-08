@@ -6,11 +6,14 @@
 [![Architecture](https://img.shields.io/badge/architecture-1U%20CubeSat-orange.svg)]()
 [![Status](https://img.shields.io/badge/development-All%20Phases%20Complete%20(108%2F108%20Tests)-brightgreen.svg)]()
 [![Tests](https://img.shields.io/badge/tests-108%20passed-success.svg)]()
-[![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-doomsat.onrender.com-00d4ff.svg)](https://doomsat.onrender.com/)
+[![Live Dashboard (GitHub)](https://img.shields.io/badge/GitHub%20Pages-sainadh--555.github.io%2Fdoomsat-00d4ff.svg)](https://sainadh-555.github.io/doomsat/)
+[![Live Dashboard (Render)](https://img.shields.io/badge/Render%20Cloud-doomsat.onrender.com-00ff88.svg)](https://doomsat.onrender.com/)
 
 GARUDA-1U is an engineering-grade digital twin and multi-physics mission simulator for a 1U CubeSat ($100 \times 100 \times 100\text{ mm}$, mass $\le 1.330\text{ kg}$), developed with high-fidelity aerospace and embedded systems modeling in Python.
 
-**Live Mission Control Dashboard:** **[https://doomsat.onrender.com/](https://doomsat.onrender.com/)**
+### Live Mission Control Dashboards
+- **[GitHub Pages Deployment (Instant Web Client)](https://sainadh-555.github.io/doomsat/)** — Direct browser-executed astrodynamics, 3D orbit globe, 2D ground track, and camera simulation running on GitHub infrastructure.
+- **[Render Cloud Deployment (Full Digital Twin)](https://doomsat.onrender.com/)** — Full multi-physics Python digital twin with WebSocket telemetry stream and REST API.
 
 ---
 
