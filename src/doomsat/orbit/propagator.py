@@ -263,3 +263,4 @@ class SGP4Propagator:
         r_m = np.array(r_km, dtype=np.float64) * 1000.0
         v_mps = np.array(v_km_s, dtype=np.float64) * 1000.0
         return r_m, v_mps
+

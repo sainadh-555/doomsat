@@ -132,3 +132,4 @@ def compute_solar_flux(
     nu, in_shadow = compute_eclipse_factor(r_eci, sun_unit_vector)
     flux = solar_constant_w_m2 * nu
     return flux, nu, in_shadow
+

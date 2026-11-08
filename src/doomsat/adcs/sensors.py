@@ -169,3 +169,4 @@ class SunSensorArray:
             return None, False
 
         return (vec / norm), True
+

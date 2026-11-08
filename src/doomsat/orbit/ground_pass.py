@@ -128,3 +128,4 @@ class GroundStation:
             radial_velocity_mps=v_radial,
             is_visible=is_visible,
         )
+

@@ -160,3 +160,4 @@ def test_ground_station_look_angles():
     assert math.isclose(look.elevation_deg, 90.0, abs_tol=0.1)
     assert math.isclose(look.slant_range_m, 500_000.0, rel_tol=1e-4)
     assert look.is_visible
+

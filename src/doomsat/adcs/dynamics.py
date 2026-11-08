@@ -253,3 +253,4 @@ class RigidBodyAttitudeDynamics:
         self.omega = w_next
 
         return self.q, self.omega
+

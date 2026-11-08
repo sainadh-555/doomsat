@@ -94,3 +94,4 @@ def compute_geomagnetic_field_eci(
 
     b_vec = scale * (3.0 * m_dot_r * r_hat - m_hat)
     return b_vec
+

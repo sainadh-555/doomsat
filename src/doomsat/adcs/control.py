@@ -145,3 +145,4 @@ class TRIADEstimator:
         # Convert DCM to unit quaternion
         q = dcm_to_quaternion(dcm_eci_to_body)
         return q
+
