@@ -25,7 +25,7 @@ def test_dashboard_rest_endpoints(client):
     # 1. Dashboard UI HTML
     res_html = client.get("/")
     assert res_html.status_code == 200
-    assert "DOOMSat-1U" in res_html.text
+    assert "GARUDA-1U" in res_html.text
 
     # 2. System Status
     res_status = client.get("/api/status")

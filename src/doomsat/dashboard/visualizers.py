@@ -73,9 +73,9 @@ def build_orbit_3d_figure(
             z=[r_sat_eci_km[2]],
             mode="markers+text",
             marker=dict(size=8, color="#ff0055", symbol="diamond"),
-            text=["DOOMSat-1U"],
+            text=["GARUDA-1U"],
             textposition="top center",
-            name="DOOMSat 1U",
+            name="GARUDA-1U",
         )
     )
 
@@ -203,7 +203,7 @@ def build_ground_track_2d_figure(
             y=[sub_lat_deg],
             mode="markers+text",
             marker=dict(size=12, color="#ff0055", symbol="circle-cross"),
-            text=["DOOMSat-1U"],
+            text=["GARUDA-1U"],
             textposition="bottom center",
             name="Sub-Satellite",
         )

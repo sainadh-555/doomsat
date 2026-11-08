@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DOOMSat-1U | Mission Control Digital Twin</title>
+  <title>GARUDA-1U | Mission Control Digital Twin</title>
   <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
   <style>
     :root {
@@ -147,7 +147,7 @@
 <body>
   <header>
     <div class="brand">
-      <h2 style="color:var(--cyan);letter-spacing:1px;">DOOMSat-1U</h2>
+      <h2 style="color:var(--cyan);letter-spacing:1px;">GARUDA-1U</h2>
       <span style="color:var(--text-dim);font-size:13px;">| Mission Operations Digital Twin</span>
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
@@ -229,30 +229,25 @@
     // Initial Plotly charts loading
     async function loadVisualizations() {
       try {
-        const [orbRes, trkRes, attRes] = await Promise.all([
+        const [orbRes, trkRes, attRes, epsRes, thmRes] = await Promise.all([
           fetch('/api/visualizations/orbit_3d').then(r => r.json()),
           fetch('/api/visualizations/ground_track').then(r => r.json()),
           fetch('/api/visualizations/attitude').then(r => r.json()),
+          fetch('/api/visualizations/eps').then(r => r.json()),
+          fetch('/api/visualizations/thermal').then(r => r.json()),
         ]);
         Plotly.newPlot('orbit-3d-div', orbRes.data, orbRes.layout, {responsive: true, displayModeBar: false});
         Plotly.newPlot('ground-track-div', trkRes.data, trkRes.layout, {responsive: true, displayModeBar: false});
         Plotly.newPlot('attitude-div', attRes.data, attRes.layout, {responsive: true, displayModeBar: false});
+        Plotly.newPlot('eps-div', epsRes.data, epsRes.layout, {responsive: true, displayModeBar: false});
+        Plotly.newPlot('thermal-div', thmRes.data, thmRes.layout, {responsive: true, displayModeBar: false});
       } catch (e) {
         console.warn("Visualizations initial load:", e);
       }
     }
     loadVisualizations();
 
-    // WebSocket Telemetry Stream
-    const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProto}//${window.location.host}/ws/telemetry`;
-    const socket = new WebSocket(wsUrl);
-
-    socket.onmessage = function(event) {
-      const data = JSON.parse(event.data);
-      updateTelemetryUI(data);
-    };
-
+    // Telemetry UI updater
     function updateTelemetryUI(data) {
       if (data.flight_mode) {
         document.getElementById('badge-mode').innerText = data.flight_mode;
@@ -268,6 +263,31 @@
         const batC = (data.battery_temp_k || 293.15) - 273.15;
         document.getElementById('tel-temps').innerText = `${obcC.toFixed(1)}°C / ${batC.toFixed(1)}°C`;
       }
+    }
+
+    // Polling fallback to keep UI fresh every 2 seconds
+    setInterval(async () => {
+      try {
+        const res = await fetch('/api/telemetry/latest');
+        if (res.ok) {
+          const data = await res.json();
+          updateTelemetryUI(data);
+        }
+      } catch (e) {}
+    }, 2000);
+
+    // WebSocket Telemetry Stream
+    try {
+      const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${wsProto}//${window.location.host}/ws/telemetry`;
+      const socket = new WebSocket(wsUrl);
+
+      socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        updateTelemetryUI(data);
+      };
+    } catch (wsErr) {
+      console.warn("WebSocket init error:", wsErr);
     }
 
     async function sendCmd(cmdStr) {

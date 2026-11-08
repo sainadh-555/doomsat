@@ -1,12 +1,14 @@
-"""FastAPI backend and WebSocket telemetry broadcaster for DOOMSat Mission Control."""
+"""FastAPI backend and WebSocket telemetry broadcaster for GARUDA-1U Mission Control."""
 
 from typing import Dict, List, Optional, Any
 import os
 import json
+import math
 import asyncio
 from pathlib import Path
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+import numpy as np
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Response
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -24,7 +26,7 @@ from doomsat.dashboard.visualizers import (
 )
 
 app = FastAPI(
-    title="DOOMSat-1U Mission Control Digital Twin",
+    title="GARUDA-1U Mission Control Digital Twin",
     description="Real-time telemetry, 3D visualization, and command uplink API",
     version="0.1.0",
 )
@@ -81,13 +83,18 @@ class ConnectionManager:
 connection_manager = ConnectionManager()
 
 
+@app.api_route("/favicon.ico", methods=["GET", "HEAD"], include_in_schema=False)
+async def favicon() -> Response:
+    return Response(status_code=204)
+
+
 @app.get("/", response_class=HTMLResponse)
 async def get_dashboard_html() -> str:
     """Serve the single-page aerospace Mission Control web UI."""
     template_path = Path(__file__).parent / "templates" / "index.html"
     if template_path.exists():
         return template_path.read_text(encoding="utf-8")
-    return "<h1>DOOMSat-1U Mission Control Dashboard</h1><p>Template not found.</p>"
+    return "<h1>GARUDA-1U Mission Control Dashboard</h1><p>Template not found.</p>"
 
 
 @app.get("/api/status")
