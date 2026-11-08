@@ -97,3 +97,40 @@ class TelemetryBeacon(BaseModel):
     in_eclipse: bool = Field(..., description="True if satellite is in eclipse")
     rssi_dbm: Optional[float] = Field(None, description="Ground station received RSSI [dBm]")
     snr_db: Optional[float] = Field(None, description="Ground station received SNR [dB]")
+
+    def pack_binary(self) -> bytes:
+        """Serialize beacon into compact 42-byte binary struct for RF transmission (MTU <= 220)."""
+        import struct
+        mode_bytes = self.flight_mode.encode("ascii")[:12].ljust(12, b"\x00")
+        return struct.pack(
+            ">Hf12sffffff?",
+            self.sequence_id,
+            self.timestamp_s,
+            mode_bytes,
+            self.battery_soc,
+            self.battery_voltage,
+            self.solar_power,
+            self.obc_temp_k,
+            self.battery_temp_k,
+            self.angular_rate_norm_radps,
+            self.in_eclipse,
+        )
+
+    @classmethod
+    def unpack_binary(cls, data: bytes) -> "TelemetryBeacon":
+        """Deserialize 43-byte binary struct."""
+        import struct
+        unpacked = struct.unpack(">Hf12sffffff?", data[:43])
+        mode_str = unpacked[2].rstrip(b"\x00").decode("ascii")
+        return cls(
+            sequence_id=unpacked[0],
+            timestamp_s=round(unpacked[1], 2),
+            flight_mode=mode_str,
+            battery_soc=round(unpacked[3], 2),
+            battery_voltage=round(unpacked[4], 2),
+            solar_power=round(unpacked[5], 2),
+            obc_temp_k=round(unpacked[6], 2),
+            battery_temp_k=round(unpacked[7], 2),
+            angular_rate_norm_radps=round(unpacked[8], 4),
+            in_eclipse=unpacked[9],
+        )

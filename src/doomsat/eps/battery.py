@@ -168,3 +168,4 @@ class LiIonBattery:
         joule_heat_w = (current ** 2) * r_int
 
         return current, v_term, self.soc_pct, joule_heat_w
+

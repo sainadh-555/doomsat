@@ -241,3 +241,4 @@ def test_eps_orbit_energy_balance():
     # Net energy generation over orbit is positive, so end SoC >= initial SoC
     assert soc_final >= 85.0
     assert not bus.is_lvd_tripped
+

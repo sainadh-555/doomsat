@@ -75,6 +75,7 @@ class SimulatedSX1276Driver(RadioDriver):
         2. Statistical Packet Error Rate (PER) evaluated from SNR.
         """
         self.packets_sent += 1
+        self.tx_buffer.append(data)
 
         if self.last_link_budget is None:
             # If no link budget set, assume default benchtop link (100% delivered)
