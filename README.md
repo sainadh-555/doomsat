@@ -1,11 +1,14 @@
-# DOOMSat: 1U CubeSat Digital Twin & Mission Simulation
+# GARUDA-1U: 1U CubeSat Digital Twin & Mission Simulation
 
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3119/)
 [![Architecture](https://img.shields.io/badge/architecture-1U%20CubeSat-orange.svg)]()
 [![Status](https://img.shields.io/badge/development-All%20Phases%20Complete%20(108%2F108%20Tests)-brightgreen.svg)]()
 [![Tests](https://img.shields.io/badge/tests-108%20passed-success.svg)]()
+[![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-doomsat.onrender.com-00d4ff.svg)](https://doomsat.onrender.com/)
 
-DOOMSat is an engineering-grade digital twin and multi-physics mission simulator for a 1U CubeSat ($100 \times 100 \times 100\text{ mm}$), developed with high-fidelity aerospace and embedded systems modeling in Python.
+GARUDA-1U is an engineering-grade digital twin and multi-physics mission simulator for a 1U CubeSat ($100 \times 100 \times 100\text{ mm}$, mass $\le 1.330\text{ kg}$), developed with high-fidelity aerospace and embedded systems modeling in Python.
+
+**Live Mission Control Dashboard:** **[https://doomsat.onrender.com/](https://doomsat.onrender.com/)**
 
 ---
 
@@ -82,7 +85,7 @@ DOOMSat is an engineering-grade digital twin and multi-physics mission simulator
 
 ## 4. Quickstart & Unified CLI
 
-DOOMSat includes a unified CLI for mission simulation, hardware-in-the-loop benchtop testing, and launching the Mission Control Dashboard:
+GARUDA-1U includes a unified CLI for mission simulation, hardware-in-the-loop benchtop testing, and launching the Mission Control Dashboard:
 
 ### 1. Run Full-Orbit Multi-Physics Simulation
 Simulate a complete 95-minute orbit (5700s) with 6-DoF attitude dynamics, B-dot detumbling, solar/eclipse ephemeris, EPS battery balance, and 8-node thermal network:
@@ -91,7 +94,7 @@ python -m doomsat.sim.cli sim --duration 5700 --dt 5.0
 ```
 
 ### 2. Launch Mission Control Dashboard
-Start the real-time FastAPI Mission Control web server with WebSocket streaming and Plotly visualizations (3D orbit globe, 2D ground track, 3D attitude cube, EPS/thermal telemetry):
+You can view the live cloud deployment directly at **[https://doomsat.onrender.com/](https://doomsat.onrender.com/)**, or run locally:
 ```bash
 python -m doomsat.sim.cli dashboard --host 127.0.0.1 --port 8000
 ```
