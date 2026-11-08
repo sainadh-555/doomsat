@@ -1,0 +1,290 @@
+{
+  "assembly_name": "DOOMSat-1U-Flight",
+  "envelope_m": [
+    0.1,
+    0.1,
+    0.1135
+  ],
+  "total_mass_kg": 0.746,
+  "mass_margin_pct": 43.909774436090224,
+  "center_of_gravity_m": [
+    0.0,
+    1.0900155889599575e-19,
+    -3.488049884671864e-18
+  ],
+  "inertia_tensor_kg_m2": [
+    [
+      0.001034524526015771,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0010400309849680656,
+      4.350724637681158e-06
+    ],
+    [
+      0.0,
+      4.350724637681158e-06,
+      0.0006607359243810386
+    ]
+  ],
+  "principal_moments_kg_m2": [
+    0.0006606860257217536,
+    0.001034524526015771,
+    0.0010400808836273506
+  ],
+  "principal_axes": [
+    [
+      0.0,
+      1.0,
+      -0.0
+    ],
+    [
+      0.011468291366126256,
+      0.0,
+      -0.9999342369841836
+    ],
+    [
+      -0.9999342369841836,
+      0.0,
+      -0.011468291366126256
+    ]
+  ],
+  "components": [
+    {
+      "name": "Chassis Structure (Al6061-T6)",
+      "part_id": "STR-01",
+      "mass_kg": 0.12,
+      "centroid_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions_m": [
+        0.1,
+        0.1,
+        0.1135
+      ],
+      "shape": "rectangular_prism",
+      "source": "Datasheet-Derived",
+      "material": "Al6061-T6"
+    },
+    {
+      "name": "Camera Payload (OV5647)",
+      "part_id": "PAY-01",
+      "mass_kg": 0.0035,
+      "centroid_m": [
+        0.0,
+        0.0,
+        -0.042
+      ],
+      "dimensions_m": [
+        0.025,
+        0.024,
+        0.01
+      ],
+      "shape": "rectangular_prism",
+      "source": "Datasheet-Derived",
+      "material": "FR4/Glass/Aluminum"
+    },
+    {
+      "name": "OBC (RPi Zero 2 W)",
+      "part_id": "OBC-01",
+      "mass_kg": 0.016,
+      "centroid_m": [
+        0.0,
+        0.0,
+        -0.025
+      ],
+      "dimensions_m": [
+        0.065,
+        0.03,
+        0.005
+      ],
+      "shape": "rectangular_prism",
+      "source": "Datasheet-Derived",
+      "material": "FR4/Silicon"
+    },
+    {
+      "name": "Battery Cell (18650 Li-ion)",
+      "part_id": "EPS-01",
+      "mass_kg": 0.045,
+      "centroid_m": [
+        0.0,
+        0.015,
+        -0.01
+      ],
+      "dimensions_m": [
+        0.0652,
+        0.0185,
+        0.0185
+      ],
+      "shape": "cylinder_x",
+      "source": "Datasheet-Derived",
+      "material": "Li-ion / Steel Can"
+    },
+    {
+      "name": "EPS PMIC & Power Regulators",
+      "part_id": "EPS-03",
+      "mass_kg": 0.01,
+      "centroid_m": [
+        0.0,
+        -0.02,
+        -0.01
+      ],
+      "dimensions_m": [
+        0.05,
+        0.04,
+        0.004
+      ],
+      "shape": "rectangular_prism",
+      "source": "Datasheet-Derived",
+      "material": "FR4/Copper"
+    },
+    {
+      "name": "ADCS & Environmental Sensors PCB",
+      "part_id": "SEN-01",
+      "mass_kg": 0.015,
+      "centroid_m": [
+        0.0,
+        0.0,
+        0.005
+      ],
+      "dimensions_m": [
+        0.08,
+        0.08,
+        0.004
+      ],
+      "shape": "rectangular_prism",
+      "source": "Datasheet-Derived",
+      "material": "FR4"
+    },
+    {
+      "name": "Comms Controller (ESP32 + SX1276)",
+      "part_id": "COM-01",
+      "mass_kg": 0.018,
+      "centroid_m": [
+        0.0,
+        0.0,
+        0.025
+      ],
+      "dimensions_m": [
+        0.08,
+        0.08,
+        0.006
+      ],
+      "shape": "rectangular_prism",
+      "source": "Datasheet-Derived",
+      "material": "FR4/Shielded Metal"
+    },
+    {
+      "name": "Antenna Deployment Module",
+      "part_id": "ANT-01",
+      "mass_kg": 0.018,
+      "centroid_m": [
+        0.0,
+        0.0,
+        0.045
+      ],
+      "dimensions_m": [
+        0.06,
+        0.06,
+        0.01
+      ],
+      "shape": "rectangular_prism",
+      "source": "Assumed",
+      "material": "Delrin/Nitinol"
+    },
+    {
+      "name": "Solar Panel Array (+X, -X, +Y, -Y, +Z)",
+      "part_id": "EPS-02",
+      "mass_kg": 0.055,
+      "centroid_m": [
+        0.0,
+        0.0,
+        0.002
+      ],
+      "dimensions_m": [
+        0.098,
+        0.098,
+        0.0015
+      ],
+      "shape": "rectangular_prism",
+      "source": "Datasheet-Derived",
+      "material": "GaAs / PCB"
+    },
+    {
+      "name": "Sun Sensor Photodiodes (6x BPW83)",
+      "part_id": "SEN-03",
+      "mass_kg": 0.0015,
+      "centroid_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions_m": [
+        0.008,
+        0.006,
+        0.003
+      ],
+      "shape": "point_mass",
+      "source": "Datasheet-Derived",
+      "material": "Silicon/Epoxy"
+    },
+    {
+      "name": "Harness, Standoffs & Fasteners",
+      "part_id": "HAR-01",
+      "mass_kg": 0.03,
+      "centroid_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions_m": [
+        0.085,
+        0.085,
+        0.09
+      ],
+      "shape": "rectangular_prism",
+      "source": "Assumed",
+      "material": "Stainless Steel 316 / PTFE"
+    },
+    {
+      "name": "Lower Trim Ballast (Brass Plate)",
+      "part_id": "BAL-01",
+      "mass_kg": 0.2166131386861314,
+      "centroid_m": [
+        -0.0,
+        -0.0011473429951690819,
+        -0.0335
+      ],
+      "dimensions_m": [
+        0.06,
+        0.06,
+        0.006
+      ],
+      "shape": "rectangular_prism",
+      "source": "Assumed",
+      "material": "Brass (CuZn39Pb3)"
+    },
+    {
+      "name": "Upper Trim Ballast (Brass Plate)",
+      "part_id": "BAL-02",
+      "mass_kg": 0.19738686131386857,
+      "centroid_m": [
+        -0.0,
+        -0.0011473429951690819,
+        0.035
+      ],
+      "dimensions_m": [
+        0.06,
+        0.06,
+        0.008
+      ],
+      "shape": "rectangular_prism",
+      "source": "Assumed",
+      "material": "Brass (CuZn39Pb3)"
+    }
+  ]
+}
