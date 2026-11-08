@@ -33,7 +33,7 @@ jobs:
 
     - name: Execute Full Test Suite (108 Tests)
       run: |
-        pytest -v --durations=10
+        python -m pytest -v --durations=10
 
     - name: Verify CLI Simulation
       run: |
@@ -41,5 +41,5 @@ jobs:
 
     - name: Verify Wheel Package Build
       run: |
-        pip install build
+        python -m pip install build
         python -m build
